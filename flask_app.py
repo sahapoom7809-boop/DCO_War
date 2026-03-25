@@ -1,4 +1,3 @@
-# 🚨 ต้องใส่ 2 บรรทัดนี้ไว้บนสุดเสมอ เพื่อป้องกันเซิร์ฟเวอร์โดนแช่แข็ง!
 import eventlet
 eventlet.monkey_patch()
 
@@ -11,7 +10,6 @@ import threading
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'dco_secret_2026'
-# เปิดใช้งาน SocketIO และตั้งโหมดเป็น eventlet เพื่อรองรับคนจำนวนมาก
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
 
 WORLD = { 'w': 4000, 'h': 3500 }
@@ -47,88 +45,94 @@ def game_loop():
     last_time = time.time()
     
     while True:
-        now = time.time()
-        dt = now - last_time
-        last_time = now
-        
-        frames = max(1.0, dt * 60.0)
-        if frames > 10: frames = 10
-        
-        current_players = {k: v for k, v in players_state.items() if now - v['last_update'] < 5}
-        
-        if current_players:
-            for boss in bosses_state:
-                prof = bossProfiles[boss['profile']]
+        try: # 🚨 ใส่เกราะป้องกันตรงนี้ ป้องกัน AI สลบเวลาข้อมูลชนกัน
+            now = time.time()
+            dt = now - last_time
+            last_time = now
+            
+            frames = max(1.0, dt * 60.0)
+            if frames > 10: frames = 10
+            
+            current_players = {k: v for k, v in players_state.items() if now - v['last_update'] < 5}
+            
+            if current_players:
+                for boss in bosses_state:
+                    prof = bossProfiles[boss['profile']]
 
-                if boss['stunTimer'] > 0:
-                    boss['stunTimer'] -= frames
-                    continue
-                
-                currentBossSpeed = prof['speed']
-                if boss['rageTimer'] > 0:
-                    currentBossSpeed *= prof['rageMult']
-                    boss['rageTimer'] -= frames
-
-                targetX, targetY = None, None
-                minDist = prof['vision']
-                
-                for name, p in current_players.items():
-                    if p['hp'] > 0:
-                        canSee = prof['seeThrough'] or (not p.get('is_hidden', False))
-                        if canSee:
-                            d = math.hypot(p['x'] - boss['x'], p['y'] - boss['y'])
-                            if d < minDist:
-                                minDist = d; targetX = p['x']; targetY = p['y']
-
-                if targetX is not None:
-                    boss['angle'] = math.atan2(targetY - boss['y'], targetX - boss['x'])
+                    if boss['stunTimer'] > 0:
+                        boss['stunTimer'] -= frames
+                        continue
                     
-                    if prof['isSupreme']:
-                        boss['shootTimer'] -= frames
-                        if boss['shootTimer'] <= 0:
-                            for i in range(8):
-                                a = (math.pi / 4) * i
-                                shots_state.append({'owner': boss['name'], 'x': boss['x'], 'y': boss['y'], 'tx': boss['x'] + math.cos(a)*500, 'ty': boss['y'] + math.sin(a)*500, 't': time.time()})
-                            boss['shootTimer'] = 150; boss['rageTimer'] = 0
+                    currentBossSpeed = prof['speed']
+                    if boss['rageTimer'] > 0:
+                        currentBossSpeed *= prof['rageMult']
+                        boss['rageTimer'] -= frames
+
+                    targetX, targetY = None, None
+                    minDist = prof['vision']
                     
-                    elif prof['canShoot']:
-                        boss['shootTimer'] -= frames
-                        if boss['shootTimer'] <= 0 and minDist < 700:
-                            isPowder = (boss['profile'] == "พี่เอ")
-                            if isPowder:
-                                for offset in [-0.3, 0, 0.3]:
-                                    a = boss['angle'] + offset
-                                    shots_state.append({'owner': boss['name'], 'x': boss['x'], 'y': boss['y'], 'tx': boss['x'] + math.cos(a)*600 + 100000, 'ty': boss['y'] + math.sin(a)*600, 't': time.time()})
-                                boss['shootTimer'] = 45
-                            else:
-                                shots_state.append({'owner': boss['name'], 'x': boss['x'], 'y': boss['y'], 'tx': targetX, 'ty': targetY, 't': time.time()})
-                                boss['shootTimer'] = 80
-                else:
-                    if random.random() < (0.02 * frames): boss['angle'] += random.uniform(-1.0, 1.0)
-                    currentBossSpeed *= 0.6
+                    for name, p in current_players.items():
+                        # 🚨 เอาระบบป้องกันพิกัดว่างเปล่ากลับมา!
+                        if p['hp'] > 0 and p.get('x') is not None and p.get('y') is not None:
+                            canSee = prof['seeThrough'] or (not p.get('is_hidden', False))
+                            if canSee:
+                                d = math.hypot(p['x'] - boss['x'], p['y'] - boss['y'])
+                                if d < minDist:
+                                    minDist = d; targetX = p['x']; targetY = p['y']
 
-                boss['x'] += math.cos(boss['angle']) * currentBossSpeed * frames
-                boss['y'] += math.sin(boss['angle']) * currentBossSpeed * frames
+                    if targetX is not None:
+                        boss['angle'] = math.atan2(targetY - boss['y'], targetX - boss['x'])
+                        
+                        if prof['isSupreme']:
+                            boss['shootTimer'] -= frames
+                            if boss['shootTimer'] <= 0:
+                                for i in range(8):
+                                    a = (math.pi / 4) * i
+                                    shots_state.append({'owner': boss['name'], 'x': boss['x'], 'y': boss['y'], 'tx': boss['x'] + math.cos(a)*500, 'ty': boss['y'] + math.sin(a)*500, 't': time.time()})
+                                boss['shootTimer'] = 150; boss['rageTimer'] = 0
+                        
+                        elif prof['canShoot']:
+                            boss['shootTimer'] -= frames
+                            if boss['shootTimer'] <= 0 and minDist < 700:
+                                isPowder = (boss['profile'] == "พี่เอ")
+                                if isPowder:
+                                    for offset in [-0.3, 0, 0.3]:
+                                        a = boss['angle'] + offset
+                                        shots_state.append({'owner': boss['name'], 'x': boss['x'], 'y': boss['y'], 'tx': boss['x'] + math.cos(a)*600 + 100000, 'ty': boss['y'] + math.sin(a)*600, 't': time.time()})
+                                    boss['shootTimer'] = 45
+                                else:
+                                    shots_state.append({'owner': boss['name'], 'x': boss['x'], 'y': boss['y'], 'tx': targetX, 'ty': targetY, 't': time.time()})
+                                    boss['shootTimer'] = 80
+                    else:
+                        if random.random() < (0.02 * frames): boss['angle'] += random.uniform(-1.0, 1.0)
+                        currentBossSpeed *= 0.6
 
-                r = boss['radius']
-                if boss['x'] < r or boss['x'] > WORLD['w']-r: boss['angle'] = math.pi - boss['angle']
-                if boss['y'] < r or boss['y'] > WORLD['h']-r: boss['angle'] = -boss['angle']
-                boss['x'] = max(r, min(WORLD['w']-r, boss['x']))
-                boss['y'] = max(r, min(WORLD['h']-r, boss['y']))
+                    boss['x'] += math.cos(boss['angle']) * currentBossSpeed * frames
+                    boss['y'] += math.sin(boss['angle']) * currentBossSpeed * frames
 
-                if boss['textTimer'] > 0: boss['textTimer'] -= frames
+                    r = boss['radius']
+                    if boss['x'] < r or boss['x'] > WORLD['w']-r: boss['angle'] = math.pi - boss['angle']
+                    if boss['y'] < r or boss['y'] > WORLD['h']-r: boss['angle'] = -boss['angle']
+                    boss['x'] = max(r, min(WORLD['w']-r, boss['x']))
+                    boss['y'] = max(r, min(WORLD['h']-r, boss['y']))
 
-        # ทำความสะอาดข้อมูลกระสุนเก่า
-        shots_state = [s for s in shots_state if now - s['t'] < 1]
-        
-        # บรอดแคสต์ข้อมูลทั้งหมดให้ทุกคนในห้อง (ส่งผ่านท่อ WebSocket)
-        sorted_players = sorted(current_players.values(), key=lambda x: x['score'], reverse=True)
-        socketio.emit('world_update', {
-            'players': sorted_players,
-            'bosses': bosses_state,
-            'shots': shots_state
-        })
-        
+                    if boss['textTimer'] > 0: boss['textTimer'] -= frames
+
+            # ทำความสะอาดข้อมูลกระสุนเก่า
+            shots_state = [s for s in shots_state if now - s['t'] < 1]
+            
+            # บรอดแคสต์ข้อมูลทั้งหมดให้ทุกคนในห้อง
+            sorted_players = sorted(current_players.values(), key=lambda x: x['score'], reverse=True)
+            socketio.emit('world_update', {
+                'players': sorted_players,
+                'bosses': bosses_state,
+                'shots': shots_state
+            })
+            
+        except Exception as e:
+            print(f"⚠️ [Game Loop Warning] : {e}")
+            pass # ถ้าเกิด Error ให้ปล่อยผ่าน ไม่ต้องหยุดทำงาน
+            
         # Server พักหายใจ
         time.sleep(0.05)
 

@@ -7,27 +7,45 @@
     <style>
         html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; background: #000; font-family: 'Tahoma', sans-serif; touch-action: none; }
         
-        #ui { position: absolute; top: 10px; left: 10px; color: #333; background: rgba(255,255,255,0.9); padding: 12px; border-radius: 5px; border-left: 5px solid #0078d4; z-index: 10; font-size: 14px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); pointer-events: none;}
+        /* 🚨 UI หน้าจอตั้งชื่อก่อนเริ่มเกม */
+        #start-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; display: flex; justify-content: center; align-items: center; }
+        .start-box { background: #fff; padding: 30px; border-radius: 15px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); max-width: 90%; width: 350px; }
+        .start-box h1 { color: #0078d4; margin-top: 0; font-size: 26px; }
+        .start-box p { color: #555; margin-bottom: 20px; font-size: 14px; }
+        .start-box input { width: 85%; padding: 12px; font-size: 18px; border: 2px solid #ccc; border-radius: 8px; margin-bottom: 20px; text-align: center; outline: none; transition: 0.3s;}
+        .start-box input:focus { border-color: #0078d4; }
+        .start-box button { background: #ff5722; color: #fff; border: none; padding: 12px 30px; font-size: 18px; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.2s; width: 90%; }
+        .start-box button:active { transform: scale(0.95); }
+
+        #ui { position: absolute; top: 10px; left: 10px; color: #333; background: rgba(255,255,255,0.9); padding: 12px; border-radius: 5px; border-left: 5px solid #0078d4; z-index: 10; font-size: 14px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); pointer-events: none; display: none;} /* ซ่อนไว้ก่อนเริ่มเกม */
         #ammo-bar { width: 150px; height: 12px; background: #eee; border-radius: 6px; overflow: hidden; margin-top: 5px; border: 1px solid #ccc; }
         #ammo-fill { width: 100%; height: 100%; background: #0078d4; transition: width 0.1s; }
-        input { pointer-events: auto; background: #fff; color: #333; border: 1px solid #ccc; padding: 3px; border-radius: 3px; width: 100px;}
         
-        #leaderboard { position: absolute; top: 10px; right: 10px; width: 140px; color: #fff; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 5px; z-index: 10; font-size: 12px; pointer-events: none; }
+        #leaderboard { position: absolute; top: 10px; right: 10px; width: 140px; color: #fff; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 5px; z-index: 10; font-size: 12px; pointer-events: none; display: none;} /* ซ่อนไว้ก่อนเริ่มเกม */
         .lb-row { display: flex; justify-content: space-between; border-bottom: 1px solid #555; padding: 3px 0; }
         
         #damage-flash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(233, 30, 99, 0.4); pointer-events: none; opacity: 0; transition: opacity 0.1s; z-index: 998; }
         #blind-flash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.98); pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 999; display: flex; justify-content: center; align-items: center; flex-direction: column; }
-        
         #boss-flash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(211, 47, 47, 0.9); pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 1000; display: flex; justify-content: center; align-items: center; flex-direction: column; }
+        #kill-flash { position: fixed; top: 25%; left: 50%; transform: translateX(-50%); font-size: 24px; font-weight: bold; text-shadow: 2px 2px 5px rgba(0,0,0,0.8); z-index: 1001; opacity: 0; transition: opacity 0.3s, transform 0.3s; pointer-events: none; background: rgba(0,0,0,0.5); padding: 10px 20px; border-radius: 10px; border: 2px solid white; text-align: center;}
 
-        #joy-move-zone { position: absolute; bottom: 30px; left: 30px; width: 120px; height: 120px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); border-radius: 50%; z-index: 20; touch-action: none;}
+        #joy-move-zone { position: absolute; bottom: 30px; left: 30px; width: 120px; height: 120px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); border-radius: 50%; z-index: 20; touch-action: none; display: none;} /* ซ่อนไว้ก่อนเริ่มเกม */
         #joy-move-knob { position: absolute; top: 35px; left: 35px; width: 50px; height: 50px; border-radius: 50%; pointer-events: none; background: rgba(0, 120, 212, 0.8); }
         
         canvas { display: block; width: 100vw; height: 100vh; }
-        @media (max-width: 768px) { .hide-mobile { display: none; } }
+        @media (max-width: 768px) { .hide-mobile { display: none !important; } }
     </style>
 </head>
 <body>
+
+<div id="start-screen">
+    <div class="start-box">
+        <h1>💦 DCO สงกรานต์</h1>
+        <p>ยินดีต้อนรับ! โปรดตั้งชื่อของคุณก่อนลงสนาม</p>
+        <input type="text" id="startNameInput" placeholder="พิมพ์ชื่อพนักงาน..." maxlength="15"><br>
+        <button id="startBtn">เข้าสู่ออฟฟิศ! 🔫</button>
+    </div>
+</div>
 
 <div id="damage-flash"></div>
 <div id="blind-flash"><h1 style="color:#e91e63">โดนปะแป้งเต็มตา!</h1><p style="color:#333">มองไม่เห็น 3 วินาที...</p></div>
@@ -35,11 +53,11 @@
     <h1 id="boss-flash-title" style="color:#ffeb3b">โดนตามงานด่วน!!</h1>
     <p id="boss-flash-desc" style="color:white; font-size:20px;">💀 ตายแล้ว! กำลังเกิดใหม่...</p>
 </div>
+<div id="kill-flash"></div>
 
 <div id="ui">
-    <b>📎 DCO สงกรานต์ <span style="color:#4caf50; font-size:10px;">(Online)</span></b><br>
-    พนักงาน: <input type="text" id="pName" value=""><br>
-    พลังใจ: <span id="hp-text">❤️❤️❤️</span><br>
+    <b>📎 พนักงาน: <span id="pNameDisplay" style="color:#0078d4; font-size:16px;"></span></b><br>
+    พลังใจ: <span id="hp-text">❤️❤️❤️❤️❤️</span><br>
     กระสุนน้ำ: <span id="ammo-text">15 / 15</span>
     <div id="ammo-bar"><div id="ammo-fill"></div></div>
     <div id="buff-text" style="margin-top:5px; font-weight:bold; color:#d32f2f; height: 15px;"></div>
@@ -63,20 +81,16 @@ const WORLD = { w: 4000, h: 3500 };
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-function resizeCanvas() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-}
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas(); 
+function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+window.addEventListener('resize', resizeCanvas); resizeCanvas(); 
 
-const randomId = Math.floor(Math.random() * 1000);
-document.getElementById('pName').value = "Staff_" + randomId;
+// 🚨 ตัวแปรคุมสถานะเกม
+let gameStarted = false;
 
-let my = { name: "Staff_" + randomId, x: Math.random() * (WORLD.w - 400) + 200, y: Math.random() * (WORLD.h - 400) + 200, hp: 3, ammo: 15, maxAmmo: 15, radius: 20, is_hidden: false, facingAngle: 0, vx: 0, vy: 0, speedTimer: 0, powderAmmo: 0, blindTimer: 0, invulTimer: 180 };
+// ตอนเข้ามาแรกสุด ให้กล้องจับภาพกลางแมพ
+let my = { name: "", x: WORLD.w/2, y: WORLD.h/2, hp: 5, ammo: 15, maxAmmo: 15, radius: 20, is_hidden: false, facingAngle: 0, vx: 0, vy: 0, speedTimer: 0, powderAmmo: 0, bombAmmo: 0, blindTimer: 0, invulTimer: 180, isTop1: false };
 
-let bosses = []; 
-let players = []; let localSplashes = []; let processedShots = new Set(); let items = [];
+let bosses = []; let players = []; let localSplashes = []; let processedShots = new Set(); let items = [];
 
 const waterCoolers = [{x:2000,y:1750,r:180}, {x:400,y:400,r:100}, {x:3600,y:400,r:100}, {x:400,y:3100,r:100}, {x:3600,y:3100,r:100}, {x:2000,y:500,r:90}, {x:2000,y:3000,r:90}];
 const paperStacks = [{x:1000,y:800,r:140}, {x:3000,y:800,r:140}, {x:1000,y:2700,r:140}, {x:3000,y:2700,r:140}, {x:200,y:1750,r:120}];
@@ -88,34 +102,60 @@ const partitions = [
 const copiers = [{x:2500,y:1100,r:150}, {x:1500,y:2500,r:150}, {x:800,y:1500,r:120}]; 
 const wetFloors = [{x:2000,y:1750,r:320}, {x:1000,y:2000,r:200}, {x:3000,y:1500,r:200}]; 
 
-const keys = {};
-window.onkeydown = e => { keys[e.code] = true; }; 
-window.onkeyup = e => keys[e.code] = false;
-window.onmousemove = e => { my.facingAngle = Math.atan2(e.clientY - canvas.height/2, e.clientX - canvas.width/2); };
+// 🚨 จัดการเมื่อกดปุ่ม "เข้าสู่ออฟฟิศ!"
+document.getElementById('startBtn').addEventListener('click', () => {
+    let inputName = document.getElementById('startNameInput').value.trim();
+    if (!inputName) {
+        inputName = "Staff_" + Math.floor(Math.random() * 1000); // ถ้าไม่กรอก สุ่มชื่อให้
+    }
+    
+    my.name = inputName;
+    document.getElementById('pNameDisplay').innerText = my.name;
+    
+    // ซ่อนหน้าเริ่มเกม เปิด UI
+    document.getElementById('start-screen').style.display = 'none';
+    document.getElementById('ui').style.display = 'block';
+    document.getElementById('leaderboard').style.display = 'block';
+    if (isMobile) document.getElementById('joy-move-zone').style.display = 'block';
+    
+    // สุ่มจุดเกิดและเซ็ตสถานะ
+    my.x = Math.random() * (WORLD.w - 400) + 200;
+    my.y = Math.random() * (WORLD.h - 400) + 200;
+    my.hp = 5;
+    my.invulTimer = 180;
+    
+    gameStarted = true; // 🚨 สับสวิตช์เริ่มเกม!
+});
+
+const keys = {}; window.onkeydown = e => keys[e.code] = true; window.onkeyup = e => keys[e.code] = false;
+window.onmousemove = e => my.facingAngle = Math.atan2(e.clientY - canvas.height/2, e.clientX - canvas.width/2);
 
 let moveTouchId = null, moveJoyX = 0, moveJoyY = 0;
 const moveZone = document.getElementById('joy-move-zone'), moveKnob = document.getElementById('joy-move-knob');
-
 moveZone.addEventListener('touchstart', e => { e.preventDefault(); let t = e.changedTouches[0]; moveTouchId = t.identifier; updateMoveJoy(t); }, {passive: false});
 moveZone.addEventListener('touchmove', e => { e.preventDefault(); for(let t of e.changedTouches) if(t.identifier === moveTouchId) updateMoveJoy(t); }, {passive: false});
 moveZone.addEventListener('touchend', e => { for(let t of e.changedTouches) if(t.identifier === moveTouchId){ moveJoyX = 0; moveJoyY = 0; moveKnob.style.transform = `translate(0,0)`; moveTouchId = null; } });
-
-function updateMoveJoy(t) {
-    const r = moveZone.getBoundingClientRect();
-    let x = t.clientX - r.left - 60, y = t.clientY - r.top - 60;
-    let d = Math.hypot(x,y); if(d > 35){ x=(x/d)*35; y=(y/d)*35; }
-    moveKnob.style.transform = `translate(${x}px,${y}px)`; moveJoyX = x/35; moveJoyY = y/35;
-}
+function updateMoveJoy(t) { const r = moveZone.getBoundingClientRect(); let x = t.clientX - r.left - 60, y = t.clientY - r.top - 60; let d = Math.hypot(x,y); if(d > 35){ x=(x/d)*35; y=(y/d)*35; } moveKnob.style.transform = `translate(${x}px,${y}px)`; moveJoyX = x/35; moveJoyY = y/35; }
 
 canvas.addEventListener('mousedown', e => handleShoot(e.clientX, e.clientY));
-canvas.addEventListener('touchstart', e => { 
-    if(e.target === canvas){ e.preventDefault(); handleShoot(e.changedTouches[0].clientX, e.changedTouches[0].clientY); } 
-}, {passive: false});
+canvas.addEventListener('touchstart', e => { if(e.target === canvas){ e.preventDefault(); handleShoot(e.changedTouches[0].clientX, e.changedTouches[0].clientY); } }, {passive: false});
 
 function handleShoot(cx, cy) {
-    if(my.ammo < 1 || my.hp <= 0) return;
-    my.ammo--; let isPowder = false; if(my.powderAmmo > 0){ isPowder = true; my.powderAmmo--; }
-    updateUI();
+    if(!gameStarted || my.ammo < 1 || my.hp <= 0) return; // 🚨 ถ้ายังไม่เริ่มเกม ห้ามยิง
+    
+    if (my.bombAmmo > 0) {
+        my.bombAmmo--; my.ammo--; updateUI();
+        for(let i=0; i<8; i++) {
+            let angle = (Math.PI / 4) * i;
+            let tx = my.x + Math.cos(angle) * 800;
+            let ty = my.y + Math.sin(angle) * 800;
+            createSplash(my.x, my.y, tx, ty, my.name, 0, false);
+            socket.emit('player_shoot', {name: my.name, x: my.x, y: my.y, tx: tx, ty: ty});
+        }
+        return;
+    }
+
+    my.ammo--; let isPowder = false; if(my.powderAmmo > 0){ isPowder = true; my.powderAmmo--; } updateUI();
     const sw = (canvas.width/2)/cameraScale, sh = (canvas.height/2)/cameraScale;
     const tx = my.x + (cx/cameraScale) - sw, ty = my.y + (cy/cameraScale) - sh;
     my.facingAngle = Math.atan2(ty-my.y, tx-my.x);
@@ -129,8 +169,7 @@ function createSplash(sx, sy, tx, ty, owner, offset, isP) {
 }
 
 function takeDamage(shooter, isP) {
-    // 🚨 หัวใจหลักของการแก้บั๊กวาป: ถ้าตายอยู่แล้ว ห้ามโดนยิงซ้ำเด็ดขาด!
-    if(my.hp <= 0 || my.invulTimer > 0) return; 
+    if(!gameStarted || my.hp <= 0 || my.invulTimer > 0) return; // 🚨 ถ้ายังไม่เริ่มเกม ห้ามรับดาเมจ
     
     if(isP) { my.blindTimer = 90; }
     if (!shooter.startsWith("🕴️")) { socket.emit('score_up', {shooter: shooter}); }
@@ -139,15 +178,15 @@ function takeDamage(shooter, isP) {
     const f = document.getElementById('damage-flash'); f.style.opacity = 1; setTimeout(()=>f.style.opacity=0, 150);
     
     if(my.hp <= 0) {
-        // 🚨 ส่งข้อมูลบอกเซิร์ฟเวอร์ทันทีว่าตัวละครเราตายแล้วนะ
         socket.emit('player_update', my); 
+        if (!shooter.startsWith("🕴️")) { socket.emit('player_killed', {killer: shooter, victim: my.name}); }
         
         document.getElementById('boss-flash-title').innerText = "💦 ร่วงซะแล้ว...";
         document.getElementById('boss-flash').style.opacity=1;
         setTimeout(() => {
             document.getElementById('boss-flash').style.opacity=0;
             my.x = Math.random() * (WORLD.w - 400) + 200; my.y = Math.random() * (WORLD.h - 400) + 200;
-            my.hp=3; my.ammo=0; my.vx=0; my.vy=0; my.speedTimer=0; my.powderAmmo=0; my.invulTimer=180; my.blindTimer=0; 
+            my.hp=5; my.ammo=0; my.vx=0; my.vy=0; my.speedTimer=0; my.powderAmmo=0; my.bombAmmo=0; my.invulTimer=180; my.blindTimer=0; 
             updateUI();
         }, 1500);
     }
@@ -156,26 +195,43 @@ function takeDamage(shooter, isP) {
 function updateUI() {
     document.getElementById('ammo-text').innerText = `${Math.floor(my.ammo)} / ${my.maxAmmo}`;
     document.getElementById('ammo-fill').style.width = (my.ammo/my.maxAmmo*100) + "%";
-    document.getElementById('hp-text').innerText = "❤️".repeat(Math.max(0, my.hp)) + "🤍".repeat(Math.max(0, 3-my.hp));
-    let b = ""; if(my.speedTimer > 0) b += "🌿 ยาดมออกฤทธิ์! "; if(my.powderAmmo > 0) b += `☁️ แป้ง (${my.powderAmmo})`;
+    document.getElementById('hp-text').innerText = "❤️".repeat(Math.max(0, my.hp)) + "🤍".repeat(Math.max(0, 5-my.hp));
+    let b = ""; if(my.speedTimer > 0) b += "🌿 ยาดมออกฤทธิ์! "; if(my.powderAmmo > 0) b += `☁️ แป้ง (${my.powderAmmo}) `; if(my.bombAmmo > 0) b += `💣 ระเบิดน้ำ (${my.bombAmmo})`; 
     document.getElementById('buff-text').innerText = b;
 }
 
+socket.on('kill_announcement', (data) => {
+    const kf = document.getElementById('kill-flash');
+    if(data.killer === 'SERVER') {
+        kf.innerHTML = `⚠️ <span style="color:#ff5252;">${data.victim}</span>`;
+        kf.style.color = "#fff"; kf.style.borderColor = "#ff5252";
+    }
+    else if(data.killer === my.name) {
+        kf.innerHTML = `🔥 คุณจัดการ <b>${data.victim}</b> ได้สำเร็จ!<br><span style="color:#4caf50;">+ โบนัสคะแนน!</span>`;
+        kf.style.color = "#ffeb3b"; kf.style.borderColor = "#ffeb3b";
+    } else {
+        kf.innerHTML = `💀 <b>${data.killer}</b> พิชิต <b>${data.victim}</b> ร่วง!`;
+        kf.style.color = "#ff5252"; kf.style.borderColor = "#ff5252";
+    }
+    kf.style.opacity = 1; kf.style.transform = "translateX(-50%) translateY(20px)";
+    setTimeout(() => { kf.style.opacity = 0; kf.style.transform = "translateX(-50%) translateY(0px)"; }, 3000);
+});
+
 socket.on('world_update', (data) => {
+    let topPlayerName = data.players.length > 0 ? data.players[0].name : null;
+    my.isTop1 = (my.name === topPlayerName);
+
     data.players.forEach(sp => {
         let lp = players.find(p => p.name === sp.name);
-        if(lp){ lp.tx=sp.x; lp.ty=sp.y; lp.hp=sp.hp; lp.score=sp.score; lp.is_hidden=sp.is_hidden; } else { sp.tx=sp.x; sp.ty=sp.y; players.push(sp); }
+        if(lp){ lp.tx=sp.x; lp.ty=sp.y; lp.hp=sp.hp; lp.score=sp.score; lp.is_hidden=sp.is_hidden; lp.isTop1 = (sp.name === topPlayerName);
+        } else { sp.tx=sp.x; sp.ty=sp.y; sp.isTop1 = (sp.name === topPlayerName); players.push(sp); }
     });
     players = players.filter(lp => data.players.some(sp => sp.name === lp.name));
     
     data.bosses.forEach(sb => {
         let lb = bosses.find(b => b.name === sb.name);
-        if (lb) {
-            lb.tx = sb.x; lb.ty = sb.y; lb.text = sb.text; lb.textTimer = sb.textTimer;
-            lb.stunTimer = sb.stunTimer; lb.rageTimer = sb.rageTimer; lb.invisible = sb.invisible;
-        } else {
-            sb.tx = sb.x; sb.ty = sb.y; bosses.push(sb);
-        }
+        if (lb) { lb.tx = sb.x; lb.ty = sb.y; lb.text = sb.text; lb.textTimer = sb.textTimer; lb.stunTimer = sb.stunTimer; lb.rageTimer = sb.rageTimer; lb.invisible = sb.invisible; lb.hp = sb.hp; lb.maxHp = sb.maxHp; lb.deadTimer = sb.deadTimer;
+        } else { sb.tx = sb.x; sb.ty = sb.y; bosses.push(sb); }
     });
     bosses = bosses.filter(lb => data.bosses.some(sb => sb.name === lb.name));
 
@@ -185,94 +241,77 @@ socket.on('world_update', (data) => {
     data.shots.forEach(s => {
         let shotKey = s.owner + "_" + s.x + "_" + s.y + "_" + s.tx + "_" + s.ty + "_" + s.t;
         if(s.owner !== my.name && !processedShots.has(shotKey)){
-            let isP = s.tx > 50000; 
-            createSplash(s.x, s.y, isP ? s.tx-100000 : s.tx, s.ty, s.owner, 0, isP);
-            processedShots.add(shotKey);
+            let isP = s.tx > 50000; createSplash(s.x, s.y, isP ? s.tx-100000 : s.tx, s.ty, s.owner, 0, isP); processedShots.add(shotKey);
         }
     });
 });
 
 function update() {
-    my.name = document.getElementById('pName').value || my.name;
-    
-    if (my.hp > 0) {
-        let s = 5; if(my.speedTimer > 0){ s = 8.5; my.speedTimer--; if(my.speedTimer===0) updateUI(); }
-        if(my.invulTimer > 0) my.invulTimer--;
-        if (my.blindTimer > 0) my.blindTimer--;
-        document.getElementById('blind-flash').style.opacity = my.blindTimer > 0 ? 0.98 : 0;
-        
-        if(copiers.some(m => Math.hypot(my.x-m.x, my.y-m.y) < m.r)) s *= 0.4;
-        let ice = wetFloors.some(f => Math.hypot(my.x-f.x, my.y-f.y) < f.r);
-        
-        let ix = 0, iy = 0;
-        if(keys['KeyW'] || keys['ArrowUp']) iy -= s;
-        if(keys['KeyS'] || keys['ArrowDown']) iy += s;
-        if(keys['KeyA'] || keys['ArrowLeft']) ix -= s;
-        if(keys['KeyD'] || keys['ArrowRight']) ix += s;
-        if(moveJoyX !== 0 || moveJoyY !== 0) { ix = moveJoyX * s; iy = moveJoyY * s; }
-        
-        if(ice){ my.vx = my.vx*0.96 + ix*0.04; my.vy = my.vy*0.96 + iy*0.04; } else { my.vx = ix; my.vy = iy; }
-        
-        let nx = my.x + my.vx, ny = my.y + my.vy;
-        let hw = partitions.some(p => nx+20 > p.x && nx-20 < p.x+p.w && my.y+20 > p.y && my.y-20 < p.y+p.h);
-        let hh = partitions.some(p => my.x+20 > p.x && my.x-20 < p.x+p.w && ny+20 > p.y && ny-20 < p.y+p.h);
-        if(!hw) my.x = Math.max(20, Math.min(WORLD.w-20, nx));
-        if(!hh) my.y = Math.max(20, Math.min(WORLD.h-20, ny));
+    // 🚨 ถ้ากดเข้าเกมแล้ว ถึงจะคำนวณการเดินและส่งข้อมูลให้เซิร์ฟเวอร์
+    if (gameStarted) {
+        if (my.hp > 0) {
+            let s = 5; if(my.speedTimer > 0){ s = 8.5; my.speedTimer--; if(my.speedTimer===0) updateUI(); }
+            if(my.invulTimer > 0) my.invulTimer--;
+            if (my.blindTimer > 0) my.blindTimer--;
+            document.getElementById('blind-flash').style.opacity = my.blindTimer > 0 ? 0.98 : 0;
+            
+            if(copiers.some(m => Math.hypot(my.x-m.x, my.y-m.y) < m.r)) s *= 0.4;
+            let ice = wetFloors.some(f => Math.hypot(my.x-f.x, my.y-f.y) < f.r);
+            
+            let ix = 0, iy = 0;
+            if(keys['KeyW'] || keys['ArrowUp']) iy -= s;
+            if(keys['KeyS'] || keys['ArrowDown']) iy += s;
+            if(keys['KeyA'] || keys['ArrowLeft']) ix -= s;
+            if(keys['KeyD'] || keys['ArrowRight']) ix += s;
+            if(moveJoyX !== 0 || moveJoyY !== 0) { ix = moveJoyX * s; iy = moveJoyY * s; }
+            
+            if(ice){ my.vx = my.vx*0.96 + ix*0.04; my.vy = my.vy*0.96 + iy*0.04; } else { my.vx = ix; my.vy = iy; }
+            
+            let nx = my.x + my.vx, ny = my.y + my.vy;
+            let hw = partitions.some(p => nx+20 > p.x && nx-20 < p.x+p.w && my.y+20 > p.y && my.y-20 < p.y+p.h);
+            let hh = partitions.some(p => my.x+20 > p.x && my.x-20 < p.x+p.w && ny+20 > p.y && ny-20 < p.y+p.h);
+            if(!hw) my.x = Math.max(20, Math.min(WORLD.w-20, nx));
+            if(!hh) my.y = Math.max(20, Math.min(WORLD.h-20, ny));
 
-        my.is_hidden = paperStacks.some(p => Math.hypot(my.x-p.x, my.y-p.y) < p.r);
-        
-        waterCoolers.forEach(c => { 
-            if(Math.hypot(my.x-c.x, my.y-c.y) < c.r) { if (my.ammo < my.maxAmmo) my.ammo = Math.min(my.maxAmmo, my.ammo+0.3); updateUI(); } 
-        });
+            my.is_hidden = paperStacks.some(p => Math.hypot(my.x-p.x, my.y-p.y) < p.r);
+            waterCoolers.forEach(c => { if(Math.hypot(my.x-c.x, my.y-c.y) < c.r) { if (my.ammo < my.maxAmmo) my.ammo = Math.min(my.maxAmmo, my.ammo+0.3); updateUI(); } });
 
-        if(Math.random() < 0.02 && items.length < 15){
-            let ix = Math.random()*(WORLD.w-200)+100, iy = Math.random()*(WORLD.h-200)+100;
-            if(!partitions.some(p => ix > p.x && ix < p.x+p.w && iy > p.y && iy < p.y+p.h)) { items.push({x:ix, y:iy, type:Math.random()>0.5?'yadom':'powder', life:900}); }
-        }
-        for(let i=items.length-1; i>=0; i--){
-            items[i].life--; if(items[i].life<=0){ items.splice(i,1); continue; }
-            if(Math.hypot(my.x-items[i].x, my.y-items[i].y) < 45){
-                if(items[i].type==='yadom'){ my.speedTimer=300; my.hp=Math.min(3,my.hp+1); } else { my.powderAmmo+=3; }
-                updateUI(); items.splice(i,1);
+            if(Math.random() < 0.02 && items.length < 15){
+                let ix = Math.random()*(WORLD.w-200)+100, iy = Math.random()*(WORLD.h-200)+100;
+                if(!partitions.some(p => ix > p.x && ix < p.x+p.w && iy > p.y && iy < p.y+p.h)) { 
+                    let rnd = Math.random(); let iType = rnd > 0.85 ? 'bomb' : (rnd > 0.4 ? 'yadom' : 'powder');
+                    items.push({x:ix, y:iy, type: iType, life:900}); 
+                }
+            }
+            for(let i=items.length-1; i>=0; i--){
+                items[i].life--; if(items[i].life<=0){ items.splice(i,1); continue; }
+                if(Math.hypot(my.x-items[i].x, my.y-items[i].y) < 45){
+                    if(items[i].type==='yadom'){ my.speedTimer=300; my.hp=Math.min(5,my.hp+1); } else if (items[i].type==='bomb'){ my.bombAmmo += 1; } else { my.powderAmmo+=3; }
+                    updateUI(); items.splice(i,1);
+                }
             }
         }
+        
+        socket.emit('player_update', my); // ส่งข้อมูลให้คนอื่นเห็น
     }
-    
-    // 🚨 ย้ายคำสั่งส่งข้อมูลออกมาข้างนอก เพื่อให้เซิร์ฟเวอร์รู้ตลอดเวลาแม้กระทั่งตอนตาย!
-    socket.emit('player_update', my);
 
-    players.forEach(p => { 
-        if(p.name !== my.name && p.tx !== undefined){ 
-            let d = Math.hypot(p.tx-p.x, p.ty-p.y);
-            if(d > 300) { p.x = p.tx; p.y = p.ty; } else { p.x += (p.tx - p.x) * 0.4; p.y += (p.ty - p.y) * 0.4; } 
-        } 
-    });
+    players.forEach(p => { if(p.name !== my.name && p.tx !== undefined){ let d = Math.hypot(p.tx-p.x, p.ty-p.y); if(d > 300) { p.x = p.tx; p.y = p.ty; } else { p.x += (p.tx - p.x) * 0.4; p.y += (p.ty - p.y) * 0.4; } } });
 
     bosses.forEach(boss => {
-        if (boss.tx !== undefined) {
-            let d = Math.hypot(boss.tx - boss.x, boss.ty - boss.y);
-            if (d > 300) { boss.x = boss.tx; boss.y = boss.ty; } 
-            else { boss.x += (boss.tx - boss.x) * 0.4; boss.y += (boss.ty - boss.y) * 0.4; }
-        }
+        if (boss.hp <= 0 || boss.deadTimer > 0) return;
+
+        if (boss.tx !== undefined) { let d = Math.hypot(boss.tx - boss.x, boss.ty - boss.y); if (d > 300) { boss.x = boss.tx; boss.y = boss.ty; } else { boss.x += (boss.tx - boss.x) * 0.4; boss.y += (boss.ty - boss.y) * 0.4; } }
         
-        if (my.hp > 0 && my.invulTimer <= 0) {
+        // 🚨 เช็คการชนบอสเฉพาะตอนที่เริ่มเกมแล้วเท่านั้น
+        if (gameStarted && my.hp > 0 && my.invulTimer <= 0) {
             if (Math.hypot(my.x - boss.x, my.y - boss.y) < boss.radius + my.radius) {
                 socket.emit('player_dead', {name:my.name, boss_name: boss.name});
                 my.hp = 0; my.ammo = 0; my.blindTimer = 0; updateUI(); 
-                
-                // 🚨 รีบส่งข้อมูลทันทีว่าโดนบอสจับตายแล้ว
                 socket.emit('player_update', my);
-                
                 document.getElementById('boss-flash-title').innerText = boss.name + " จับได้!!";
                 document.getElementById('boss-flash').style.opacity=1;
-                setTimeout(() => {
-                    document.getElementById('boss-flash').style.opacity=0;
-                    my.x = Math.random() * (WORLD.w - 400) + 200; my.y = Math.random() * (WORLD.h - 400) + 200;
-                    my.hp = 3; my.ammo = 0; my.vx = 0; my.vy = 0; my.speedTimer = 0; my.powderAmmo = 0; my.invulTimer = 180;
-                    updateUI();
-                }, 2500);
+                setTimeout(() => { document.getElementById('boss-flash').style.opacity=0; my.x = Math.random() * (WORLD.w - 400) + 200; my.y = Math.random() * (WORLD.h - 400) + 200; my.hp = 5; my.ammo = 0; my.vx = 0; my.vy = 0; my.speedTimer = 0; my.powderAmmo = 0; my.bombAmmo = 0; my.invulTimer = 180; updateUI(); }, 2500);
             }
-            
             if (boss.isSupreme) {
                 let distToMe = Math.hypot(my.x - boss.x, my.y - boss.y);
                 if (distToMe < 350) {
@@ -289,16 +328,16 @@ function update() {
         let hitW = partitions.some(p => s.x>p.x && s.x<p.x+p.w && s.y>p.y && s.y<p.y+p.h);
         let hitS = false;
         
-        if (s.owner === my.name) {
-            for (let b = 0; b < bosses.length; b++) {
-                if (Math.hypot(s.x-bosses[b].x, s.y-bosses[b].y) < bosses[b].radius + 15) {
-                    hitS = true;
-                    socket.emit('boss_hit', {name:my.name, boss_id: b});
-                    break;
-                }
+        if (gameStarted && s.owner === my.name) {
+            for (let b = 0; b < bosses.length; b++) { 
+                if (bosses[b].hp <= 0 || bosses[b].deadTimer > 0) continue;
+                if (Math.hypot(s.x-bosses[b].x, s.y-bosses[b].y) < bosses[b].radius + 15) { hitS = true; socket.emit('boss_hit', {name:my.name, boss_id: b}); break; } 
             }
         }
-        if(!hitS && s.owner !== my.name && Math.hypot(s.x-my.x, s.y-my.y) < 35){ takeDamage(s.owner, s.isP); hitS=true; }
+        
+        // 🚨 เช็คว่าเราโดนยิงไหม เฉพาะตอนที่เริ่มเกมแล้ว
+        if(gameStarted && !hitS && s.owner !== my.name && Math.hypot(s.x-my.x, s.y-my.y) < 35){ takeDamage(s.owner, s.isP); hitS=true; }
+        
         if(!hitS) for(let p of players) if(p.name!==my.name && p.name!==s.owner && p.hp>0 && Math.hypot(s.x-p.x, s.y-p.y)<35){ hitS=true; break; }
         if(s.life<=0 || hitW || hitS) localSplashes.splice(i,1);
     }
@@ -309,8 +348,7 @@ function draw() {
     ctx.fillStyle = "#000"; ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.save(); 
     let now = Math.floor(Date.now() / 1000); let isBlackout = (now % 60) < 10;
-    ctx.scale(cameraScale, cameraScale);
-    ctx.translate(-(my.x - (canvas.width/2)/cameraScale), -(my.y - (canvas.height/2)/cameraScale));
+    ctx.scale(cameraScale, cameraScale); ctx.translate(-(my.x - (canvas.width/2)/cameraScale), -(my.y - (canvas.height/2)/cameraScale));
     ctx.fillStyle = "#f5f5f5"; ctx.fillRect(0,0,WORLD.w,WORLD.h);
     
     ctx.strokeStyle = "#ddd"; ctx.lineWidth = 1;
@@ -323,75 +361,78 @@ function draw() {
     ctx.fillStyle="#00bcd4"; partitions.forEach(p => ctx.fillRect(p.x,p.y,p.w,p.h));
     paperStacks.forEach(p => { ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill(); ctx.strokeStyle="#ccc"; ctx.stroke(); ctx.fillStyle="#999"; ctx.fillText("กองเอกสาร", p.x-40, p.y); });
 
-    items.forEach(it => {
-        ctx.save(); if(it.life<120) ctx.globalAlpha = (it.life%20<10)?0.3:1;
-        ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(it.x,it.y,20,0,Math.PI*2); ctx.fill(); ctx.strokeStyle="#000"; ctx.stroke();
-        ctx.fillStyle="#000"; ctx.font="22px Arial"; ctx.textAlign="center"; ctx.fillText(it.type==='yadom'?'🌿':'☁️', it.x, it.y+8); ctx.restore();
+    items.forEach(it => { 
+        ctx.save(); if(it.life<120) ctx.globalAlpha = (it.life%20<10)?0.3:1; 
+        ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(it.x,it.y,20,0,Math.PI*2); ctx.fill(); ctx.strokeStyle="#000"; ctx.stroke(); 
+        ctx.fillStyle="#000"; ctx.font="22px Arial"; ctx.textAlign="center"; ctx.fillText(it.type==='yadom'?'🌿':(it.type==='bomb'?'💣':'☁️'), it.x, it.y+8); ctx.restore(); 
     });
 
     localSplashes.forEach(s => { ctx.fillStyle=s.isP?'#fff':'#0078d4'; ctx.beginPath(); ctx.arc(s.x,s.y,12,0,Math.PI*2); ctx.fill(); });
 
-    players.forEach(p => { if(p.name !== my.name){ let d = Math.hypot(p.x-my.x, p.y-my.y); if(!p.is_hidden || p.hp<=0 || d<150) drawAvatar(p.x, p.y, p.name, p.hp, false); } });
+    players.forEach(p => { 
+        if(p.name !== my.name){ 
+            let d = Math.hypot(p.x-my.x, p.y-my.y); 
+            if(!p.is_hidden || p.hp<=0 || d<150 || p.isTop1) drawAvatar(p.x, p.y, p.name, p.hp, false, p.isTop1); 
+        } 
+    });
 
     bosses.forEach(boss => {
+        if (boss.hp <= 0 || boss.deadTimer > 0) return;
+
         ctx.save();
-        if (boss.invisible) {
-            if (boss.stunTimer <= 0 && boss.textTimer <= 0) { let phase = Date.now() % 4500; if (phase < 3000) { ctx.globalAlpha = 0; } else { ctx.globalAlpha = 0.15; }
-            } else { ctx.globalAlpha = 0.8; }
-        } else { ctx.globalAlpha = 1; }
+        if (boss.invisible) { if (boss.stunTimer <= 0 && boss.textTimer <= 0) { let phase = Date.now() % 4500; if (phase < 3000) { ctx.globalAlpha = 0; } else { ctx.globalAlpha = 0.15; } } else { ctx.globalAlpha = 0.8; } } else { ctx.globalAlpha = 1; }
         
-        if (boss.isSupreme && ctx.globalAlpha > 0) {
-            ctx.beginPath(); ctx.arc(boss.x, boss.y, 350, 0, Math.PI*2); ctx.fillStyle = "rgba(211, 47, 47, 0.05)"; ctx.fill();
-            ctx.strokeStyle = "rgba(211, 47, 47, 0.4)"; ctx.lineWidth = 2; ctx.setLineDash([10, 10]); ctx.stroke(); ctx.setLineDash([]);
-        }
+        if (boss.isSupreme && ctx.globalAlpha > 0) { ctx.beginPath(); ctx.arc(boss.x, boss.y, 350, 0, Math.PI*2); ctx.fillStyle = "rgba(211, 47, 47, 0.05)"; ctx.fill(); ctx.strokeStyle = "rgba(211, 47, 47, 0.4)"; ctx.lineWidth = 2; ctx.setLineDash([10, 10]); ctx.stroke(); ctx.setLineDash([]); }
 
         if (ctx.globalAlpha > 0) {
-            ctx.fillStyle = boss.color; ctx.beginPath(); ctx.arc(boss.x, boss.y, boss.radius, 0, Math.PI*2); ctx.fill();
-            ctx.strokeStyle = boss.rageTimer > 0 ? "#fff" : "#000"; ctx.lineWidth = boss.rageTimer > 0 ? 5 : 2; ctx.stroke();
+            ctx.fillStyle = boss.color; ctx.beginPath(); ctx.arc(boss.x, boss.y, boss.radius, 0, Math.PI*2); ctx.fill(); ctx.strokeStyle = boss.rageTimer > 0 ? "#fff" : "#000"; ctx.lineWidth = boss.rageTimer > 0 ? 5 : 2; ctx.stroke();
+            ctx.fillStyle="#fff"; ctx.strokeStyle="black"; ctx.lineWidth=4; ctx.font="bold 20px Tahoma"; ctx.textAlign="center"; ctx.strokeText(boss.name, boss.x, boss.y-boss.radius-15); ctx.fillText(boss.name, boss.x, boss.y-boss.radius-15);
+            ctx.fillStyle = boss.rageTimer > 0 ? "#ffeb3b" : "white"; ctx.beginPath(); ctx.arc(boss.x-10, boss.y-5, 5, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(boss.x+10, boss.y-5, 5, 0, Math.PI*2); ctx.fill();
+            if (boss.stunTimer > 0) { ctx.fillStyle="#ffeb3b"; ctx.strokeStyle="red"; ctx.lineWidth=3; ctx.font="bold 30px Tahoma"; ctx.strokeText("💢", boss.x, boss.y - boss.radius - 40); ctx.fillText("💢", boss.x, boss.y - boss.radius - 40); }
+            if (boss.textTimer > 0) { ctx.fillStyle="white"; ctx.strokeStyle="black"; ctx.lineWidth=3; ctx.font="bold 16px Tahoma"; ctx.strokeText(boss.text, boss.x, boss.y-boss.radius-45); ctx.fillText(boss.text, boss.x, boss.y-boss.radius-45); }
             
-            ctx.fillStyle="#fff"; ctx.strokeStyle="black"; ctx.lineWidth=4; ctx.font="bold 20px Tahoma"; ctx.textAlign="center"; 
-            ctx.strokeText(boss.name, boss.x, boss.y-boss.radius-15); ctx.fillText(boss.name, boss.x, boss.y-boss.radius-15);
-
-            ctx.fillStyle = boss.rageTimer > 0 ? "#ffeb3b" : "white"; 
-            ctx.beginPath(); ctx.arc(boss.x-10, boss.y-5, 5, 0, Math.PI*2); ctx.fill(); 
-            ctx.beginPath(); ctx.arc(boss.x+10, boss.y-5, 5, 0, Math.PI*2); ctx.fill();
-
-            if (boss.stunTimer > 0) {
-                ctx.fillStyle="#ffeb3b"; ctx.strokeStyle="red"; ctx.lineWidth=3; ctx.font="bold 30px Tahoma";
-                ctx.strokeText("💢", boss.x, boss.y - boss.radius - 40); ctx.fillText("💢", boss.x, boss.y - boss.radius - 40);
-            }
-            if (boss.textTimer > 0) {
-                ctx.fillStyle="white"; ctx.strokeStyle="black"; ctx.lineWidth=3; ctx.font="bold 16px Tahoma";
-                ctx.strokeText(boss.text, boss.x, boss.y-boss.radius-45); ctx.fillText(boss.text, boss.x, boss.y-boss.radius-45);
-            }
+            let barW = boss.radius * 2;
+            ctx.fillStyle = "black"; ctx.fillRect(boss.x - barW/2, boss.y - boss.radius - 35, barW, 8);
+            ctx.fillStyle = boss.hp > (boss.maxHp * 0.3) ? "#4caf50" : "#f44336"; 
+            ctx.fillRect(boss.x - barW/2, boss.y - boss.radius - 35, barW * (boss.hp / boss.maxHp), 8);
+            ctx.strokeStyle = "white"; ctx.lineWidth = 1; ctx.strokeRect(boss.x - barW/2, boss.y - boss.radius - 35, barW, 8);
         }
         ctx.restore();
     });
 
-    ctx.globalAlpha = my.is_hidden ? 0.4 : 1;
-    if(my.hp > 0 && !(my.invulTimer>0 && Math.floor(Date.now()/150)%2===0)) { drawAvatar(my.x, my.y, my.name, my.hp, my.invulTimer>0); }
+    // 🚨 ถ้าเริ่มเกมแล้ว ถึงจะวาดตัวละครของเราลงบนจอ
+    if (gameStarted) {
+        ctx.globalAlpha = my.is_hidden ? 0.4 : 1;
+        if(my.hp > 0 && !(my.invulTimer>0 && Math.floor(Date.now()/150)%2===0)) { 
+            drawAvatar(my.x, my.y, my.name, my.hp, my.invulTimer>0, my.isTop1); 
+        }
+    }
     ctx.globalAlpha = 1; ctx.restore(); 
     
     if (isBlackout) {
-        ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); 
-        let maxRadius = Math.min(canvas.width, canvas.height) * 0.4; 
-        let grad = ctx.createRadialGradient(canvas.width/2, canvas.height/2, maxRadius * 0.5, canvas.width/2, canvas.height/2, maxRadius);
-        grad.addColorStop(0, "rgba(0, 0, 0, 0)"); grad.addColorStop(1, "rgba(0, 0, 0, 1)"); 
-        ctx.fillStyle = grad; ctx.fillRect(0, 0, canvas.width, canvas.height); 
-        ctx.fillStyle = "#ffeb3b"; ctx.font = "bold 28px Tahoma"; ctx.textAlign = "center"; ctx.strokeStyle = "black"; ctx.lineWidth = 4;
-        ctx.strokeText("⚠️ ไฟดับ!! ระวังหลังให้ดี! ⚠️", canvas.width/2, 100); ctx.fillText("⚠️ ไฟดับ!! ระวังหลังให้ดี! ⚠️", canvas.width/2, 100);
-        ctx.restore();
+        ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); let maxRadius = Math.min(canvas.width, canvas.height) * 0.4; let grad = ctx.createRadialGradient(canvas.width/2, canvas.height/2, maxRadius * 0.5, canvas.width/2, canvas.height/2, maxRadius);
+        grad.addColorStop(0, "rgba(0, 0, 0, 0)"); grad.addColorStop(1, "rgba(0, 0, 0, 1)"); ctx.fillStyle = grad; ctx.fillRect(0, 0, canvas.width, canvas.height); 
+        ctx.fillStyle = "#ffeb3b"; ctx.font = "bold 28px Tahoma"; ctx.textAlign = "center"; ctx.strokeStyle = "black"; ctx.lineWidth = 4; ctx.strokeText("⚠️ ไฟดับ!! ระวังหลังให้ดี! ⚠️", canvas.width/2, 100); ctx.fillText("⚠️ ไฟดับ!! ระวังหลังให้ดี! ⚠️", canvas.width/2, 100); ctx.restore();
     }
 }
 
-function drawAvatar(x, y, name, hp, invul) {
-    if(hp <= 0) return; ctx.save();
-    ctx.globalAlpha *= (hp===3?1:(hp===2?0.7:0.4));
+function drawAvatar(x, y, name, hp, invul, isTop1) {
+    if(hp <= 0) return; ctx.save(); 
+    ctx.globalAlpha *= Math.max(0.4, hp/5); 
+    
     if(invul){ ctx.beginPath(); ctx.arc(x,y,30,0,Math.PI*2); ctx.fillStyle="rgba(255,235,59,0.5)"; ctx.fill(); }
+    
     ctx.fillStyle="#ff5722"; ctx.beginPath(); ctx.arc(x,y,20,0,Math.PI*2); ctx.fill(); ctx.strokeStyle="#fff"; ctx.lineWidth=3; ctx.stroke();
     ctx.fillStyle="#e91e63"; ctx.font="bold 20px Arial"; ctx.textAlign="center"; ctx.fillText("❤️".repeat(hp), x, y-35);
     if(invul && name===my.name) { ctx.fillStyle="#ffeb3b"; ctx.font="bold 24px Arial"; ctx.fillText("อมตะ!", x, y-60); }
-    ctx.fillStyle="#fff"; ctx.font="14px Tahoma"; ctx.fillText(name, x, y-85); ctx.restore();
+    ctx.fillStyle="#fff"; ctx.font="14px Tahoma"; ctx.fillText(name, x, y-85); 
+    
+    if(isTop1) {
+        ctx.fillStyle="#ffeb3b"; ctx.font="35px Arial"; ctx.fillText("👑", x, y-105);
+        ctx.beginPath(); ctx.arc(x,y,45,0,Math.PI*2); ctx.strokeStyle="rgba(255,235,59,0.5)"; ctx.lineWidth=6; ctx.stroke();
+    }
+    
+    ctx.restore();
 }
 
 update();

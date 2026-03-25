@@ -6,7 +6,7 @@ from flask_socketio import SocketIO
 import time
 import random
 import math
-from threading import Lock # 🚨 นำเข้าตัวล็อค AI
+from threading import Lock
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'dco_secret_2026'
@@ -17,12 +17,12 @@ players_state = {}
 shots_state = []
 bosses_state = []
 
-# 🚨 ตัวแปรควบคุมสมองกล AI
 thread = None
 thread_lock = Lock()
 
+# 🚨 อัปเกรดพี่ตุ๊: วิ่งเร็ว 4.5, ตาทิพย์ (seeThrough: True), มองไกล 1200
 bossProfiles = {
-    "พี่ตุ๊": { 'radius': 35, 'speed': 3.2, 'color': "#d32f2f", 'text': "แจกงานด่วน!", 'stunTime': 15, 'rageMult': 2.0, 'seeThrough': False, 'vision': 650, 'canShoot': True, 'invisible': False, 'isSupreme': True }, 
+    "พี่ตุ๊": { 'radius': 40, 'speed': 4.5, 'color': "#d32f2f", 'text': "แจกงานด่วน!!", 'stunTime': 5, 'rageMult': 2.0, 'seeThrough': True, 'vision': 1200, 'canShoot': True, 'invisible': False, 'isSupreme': True }, 
     "พี่พงษ์": { 'radius': 30, 'speed': 3.5, 'color': "#1976d2", 'text': "แก้ตรงนี้นิดนึง", 'stunTime': 45, 'rageMult': 1.5, 'seeThrough': True, 'vision': 900, 'canShoot': False, 'invisible': False, 'isSupreme': False }, 
     "พี่เอ": { 'radius': 55, 'speed': 3.8, 'color': "#388e3c", 'text': "เอาแป้งไปกิน!", 'stunTime': 0, 'rageMult': 1.5, 'seeThrough': False, 'vision': 700, 'canShoot': True, 'invisible': False, 'isSupreme': False }, 
     "พี่หนู": { 'radius': 25, 'speed': 2.6, 'color': "#e91e63", 'text': "แอบอยู่นี่เอง~", 'stunTime': 30, 'rageMult': 1.2, 'seeThrough': False, 'vision': 500, 'canShoot': False, 'invisible': True, 'isSupreme': False }, 
@@ -43,7 +43,6 @@ def create_global_bosses():
 
 create_global_bosses()
 
-# --- หัวใจหลัก: Game Loop ของ Server ---
 def game_loop():
     global shots_state
     last_time = time.time()
@@ -89,10 +88,11 @@ def game_loop():
                         if prof['isSupreme']:
                             boss['shootTimer'] -= frames
                             if boss['shootTimer'] <= 0:
-                                for i in range(8):
-                                    a = (math.pi / 4) * i
-                                    shots_state.append({'owner': boss['name'], 'x': boss['x'], 'y': boss['y'], 'tx': boss['x'] + math.cos(a)*500, 'ty': boss['y'] + math.sin(a)*500, 't': time.time()})
-                                boss['shootTimer'] = 150; boss['rageTimer'] = 0
+                                # 🚨 สกิลพี่ตุ๊: ยิงกระจาย 12 ทิศ
+                                for i in range(12):
+                                    a = (math.pi / 6) * i
+                                    shots_state.append({'owner': boss['name'], 'x': boss['x'], 'y': boss['y'], 'tx': boss['x'] + math.cos(a)*700, 'ty': boss['y'] + math.sin(a)*700, 't': time.time()})
+                                boss['shootTimer'] = 80; boss['rageTimer'] = 0 
                         
                         elif prof['canShoot']:
                             boss['shootTimer'] -= frames
@@ -131,18 +131,16 @@ def game_loop():
             })
             
         except Exception as e:
-            print(f"⚠️ [Game Loop Error] : {e}")
+            pass
             
         socketio.sleep(0.05)
 
-# 🚨 สวิตช์เปิด AI: จะทำงานเมื่อมีผู้เล่นคนแรกกดเข้าเว็บเท่านั้น!
 @socketio.on('connect')
 def on_connect():
     global thread
     with thread_lock:
         if thread is None:
             thread = socketio.start_background_task(game_loop)
-            print("🎮 AI Boss Thread Started!")
 
 @app.route('/')
 def index():
@@ -176,18 +174,38 @@ def handle_boss_hit(data):
         boss['rageTimer'] = 180
         boss['text'] = "หน็อยแน่ะ!! 😡" if prof['stunTime'] > 0 else "สาดมาสาดกลับ!"
         boss['textTimer'] = 120
-        if p_name in players_state: players_state[p_name]['score'] += 20
+        # 🚨 ลดคะแนนยิงบอสเหลือ +5
+        if p_name in players_state: players_state[p_name]['score'] += 5
 
 @socketio.on('score_up')
 def handle_score_up(data):
     shooter = data.get('shooter')
+    # ยิงโดนเพื่อนเฉยๆ (ยังไม่ตาย) ได้ +10
     if shooter in players_state: players_state[shooter]['score'] += 10
+
+# 🚨 ระบบใหม่: แจ้งเตือนเมื่อมีการฆ่ากันเกิดขึ้น + คนโดนฆ่าคะแนนลด
+@socketio.on('player_killed')
+def handle_player_killed(data):
+    killer = data.get('killer')
+    victim = data.get('victim')
+    
+    # 1. คนยิง (killer) ได้ +50 คะแนน
+    if killer in players_state:
+        players_state[killer]['score'] += 50 
+        
+    # 2. คนโดนยิงตาย (victim) โดนหัก -20 คะแนน (คะแนนจะไม่ต่ำกว่า 0)
+    if victim in players_state:
+        players_state[victim]['score'] = max(0, players_state[victim]['score'] - 20)
+        
+    # บรอดแคสต์บอกทุกคนในห้องว่าใครฆ่าใคร
+    socketio.emit('kill_announcement', {'killer': killer, 'victim': victim})
 
 @socketio.on('player_dead')
 def handle_player_dead(data):
     name, boss_name = data.get('name'), data.get('boss_name')
     if name in players_state:
-        players_state[name]['score'] = max(0, players_state[name]['score'] - 50)
+        # 🚨 โดนบอสจับก็โดนหัก -20 คะแนนเช่นกัน
+        players_state[name]['score'] = max(0, players_state[name]['score'] - 20)
         for boss in bosses_state:
             if boss['name'] == boss_name:
                 boss['text'] = f"จับ {name} ได้แล้ว! 🎉"

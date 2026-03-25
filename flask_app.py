@@ -20,7 +20,6 @@ bosses_state = []
 thread = None
 thread_lock = Lock()
 
-# 🚨 เพิ่ม killScore แจกคะแนนตามความโหด! พี่ตุ๊ +500, คนอื่น +200
 bossProfiles = {
     "พี่ตุ๊": { 'maxHp': 500, 'killScore': 500, 'radius': 40, 'speed': 4.5, 'color': "#d32f2f", 'text': "แจกงานด่วน!!", 'stunTime': 5, 'rageMult': 2.0, 'seeThrough': True, 'vision': 1200, 'canShoot': True, 'invisible': False, 'isSupreme': True }, 
     "พี่พงษ์": { 'maxHp': 200, 'killScore': 200, 'radius': 30, 'speed': 3.5, 'color': "#1976d2", 'text': "แก้ตรงนี้นิดนึง", 'stunTime': 45, 'rageMult': 1.5, 'seeThrough': True, 'vision': 900, 'canShoot': False, 'invisible': False, 'isSupreme': False }, 
@@ -159,7 +158,13 @@ def index():
 def handle_player_update(data):
     name = data.get('name')
     if not name: return
-    current_score = players_state.get(name, {}).get('score', 0)
+    
+    # 🚨 ระบบกู้คะแนน: ถ้าเซิร์ฟเวอร์เพิ่งตื่น (ยังไม่มีชื่อคนนี้) ให้รับคะแนนจากเครื่องที่ส่งมา!
+    if name in players_state:
+        current_score = players_state[name]['score']
+    else:
+        current_score = data.get('saved_score', 0)
+        
     players_state[name] = {
         'name': name, 'x': data.get('x'), 'y': data.get('y'),
         'hp': data.get('hp'), 'score': current_score,
@@ -189,7 +194,6 @@ def handle_boss_hit(data):
             boss['x'] = -1000 
             boss['y'] = -1000
             if p_name in players_state: 
-                # 🚨 ให้คะแนนโบนัสตามระดับความโหดของบอสที่ยิงตาย
                 players_state[p_name]['score'] += prof['killScore'] 
             socketio.emit('kill_announcement', {'killer': p_name, 'victim': boss['name']})
         else:

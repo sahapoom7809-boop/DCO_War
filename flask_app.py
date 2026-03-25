@@ -1,4 +1,3 @@
-# 🚨 ต้องใส่ 2 บรรทัดนี้ไว้บนสุดเสมอ เพื่อป้องกันเซิร์ฟเวอร์โดนแช่แข็ง!
 import eventlet
 eventlet.monkey_patch()
 
@@ -7,16 +6,20 @@ from flask_socketio import SocketIO
 import time
 import random
 import math
+from threading import Lock # 🚨 นำเข้าตัวล็อค AI
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'dco_secret_2026'
-# เปิดใช้งาน SocketIO และตั้งโหมดเป็น eventlet เพื่อรองรับคนจำนวนมาก
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
 
 WORLD = { 'w': 4000, 'h': 3500 }
 players_state = {}
 shots_state = []
 bosses_state = []
+
+# 🚨 ตัวแปรควบคุมสมองกล AI
+thread = None
+thread_lock = Lock()
 
 bossProfiles = {
     "พี่ตุ๊": { 'radius': 35, 'speed': 3.2, 'color': "#d32f2f", 'text': "แจกงานด่วน!", 'stunTime': 15, 'rageMult': 2.0, 'seeThrough': False, 'vision': 650, 'canShoot': True, 'invisible': False, 'isSupreme': True }, 
@@ -54,7 +57,6 @@ def game_loop():
             frames = max(1.0, dt * 60.0)
             if frames > 10: frames = 10
             
-            # 🚨 ใช้ list() ถ่าย snapshot ข้อมูลผู้เล่น ป้องกัน Error เวลาคนเข้าออกแบบรัวๆ
             current_players = {k: v for k, v in list(players_state.items()) if now - v.get('last_update', 0) < 5}
             
             if current_players:
@@ -131,17 +133,21 @@ def game_loop():
         except Exception as e:
             print(f"⚠️ [Game Loop Error] : {e}")
             
-        # 🚨 ใช้คำสั่งพักเบรกของ Socket.IO แทบ time.sleep() ปกติ เพื่อไม่ให้เซิร์ฟสลบ
         socketio.sleep(0.05)
 
-# 🚨 วิธีรัน Thread ที่ถูกต้องของ SocketIO
-socketio.start_background_task(game_loop)
+# 🚨 สวิตช์เปิด AI: จะทำงานเมื่อมีผู้เล่นคนแรกกดเข้าเว็บเท่านั้น!
+@socketio.on('connect')
+def on_connect():
+    global thread
+    with thread_lock:
+        if thread is None:
+            thread = socketio.start_background_task(game_loop)
+            print("🎮 AI Boss Thread Started!")
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# --- WebSocket Events ---
 @socketio.on('player_update')
 def handle_player_update(data):
     name = data.get('name')

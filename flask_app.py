@@ -20,25 +20,26 @@ bosses_state = []
 thread = None
 thread_lock = Lock()
 
-# 🚨 อัปเกรดพี่ตุ๊: วิ่งเร็ว 4.5, ตาทิพย์ (seeThrough: True), มองไกล 1200
+# 🚨 เพิ่ม killScore แจกคะแนนตามความโหด! พี่ตุ๊ +500, คนอื่น +200
 bossProfiles = {
-    "พี่ตุ๊": { 'radius': 40, 'speed': 4.5, 'color': "#d32f2f", 'text': "แจกงานด่วน!!", 'stunTime': 5, 'rageMult': 2.0, 'seeThrough': True, 'vision': 1200, 'canShoot': True, 'invisible': False, 'isSupreme': True }, 
-    "พี่พงษ์": { 'radius': 30, 'speed': 3.5, 'color': "#1976d2", 'text': "แก้ตรงนี้นิดนึง", 'stunTime': 45, 'rageMult': 1.5, 'seeThrough': True, 'vision': 900, 'canShoot': False, 'invisible': False, 'isSupreme': False }, 
-    "พี่เอ": { 'radius': 55, 'speed': 3.8, 'color': "#388e3c", 'text': "เอาแป้งไปกิน!", 'stunTime': 0, 'rageMult': 1.5, 'seeThrough': False, 'vision': 700, 'canShoot': True, 'invisible': False, 'isSupreme': False }, 
-    "พี่หนู": { 'radius': 25, 'speed': 2.6, 'color': "#e91e63", 'text': "แอบอยู่นี่เอง~", 'stunTime': 30, 'rageMult': 1.2, 'seeThrough': False, 'vision': 500, 'canShoot': False, 'invisible': True, 'isSupreme': False }, 
-    "พี่โอ๋": { 'radius': 30, 'speed': 5.5, 'color': "#f57c00", 'text': "ด่วนๆๆ เอาเดี๋ยวนี้!", 'stunTime': 40, 'rageMult': 1.3, 'seeThrough': False, 'vision': 600, 'canShoot': False, 'invisible': False, 'isSupreme': False } 
+    "พี่ตุ๊": { 'maxHp': 500, 'killScore': 500, 'radius': 40, 'speed': 4.5, 'color': "#d32f2f", 'text': "แจกงานด่วน!!", 'stunTime': 5, 'rageMult': 2.0, 'seeThrough': True, 'vision': 1200, 'canShoot': True, 'invisible': False, 'isSupreme': True }, 
+    "พี่พงษ์": { 'maxHp': 200, 'killScore': 200, 'radius': 30, 'speed': 3.5, 'color': "#1976d2", 'text': "แก้ตรงนี้นิดนึง", 'stunTime': 45, 'rageMult': 1.5, 'seeThrough': True, 'vision': 900, 'canShoot': False, 'invisible': False, 'isSupreme': False }, 
+    "พี่เอ": { 'maxHp': 200, 'killScore': 200, 'radius': 55, 'speed': 3.8, 'color': "#388e3c", 'text': "เอาแป้งไปกิน!", 'stunTime': 0, 'rageMult': 1.5, 'seeThrough': False, 'vision': 700, 'canShoot': True, 'invisible': False, 'isSupreme': False }, 
+    "พี่หนู": { 'maxHp': 200, 'killScore': 200, 'radius': 25, 'speed': 2.6, 'color': "#e91e63", 'text': "แอบอยู่นี่เอง~", 'stunTime': 30, 'rageMult': 1.2, 'seeThrough': False, 'vision': 500, 'canShoot': False, 'invisible': True, 'isSupreme': False }, 
+    "พี่โอ๋": { 'maxHp': 200, 'killScore': 200, 'radius': 30, 'speed': 5.5, 'color': "#f57c00", 'text': "ด่วนๆๆ เอาเดี๋ยวนี้!", 'stunTime': 40, 'rageMult': 1.3, 'seeThrough': False, 'vision': 600, 'canShoot': False, 'invisible': False, 'isSupreme': False } 
 }
 
 def create_global_bosses():
     bosses_state.clear()
     for name, prof in bossProfiles.items():
         bosses_state.append({
-            'name': "🕴️ " + name,
+            'name': "🕴️ " + name, 'profile': name,
             'color': prof['color'], 'radius': prof['radius'], 'isSupreme': prof['isSupreme'], 'invisible': prof['invisible'],
             'x': random.uniform(200, WORLD['w'] - 200), 'y': random.uniform(200, WORLD['h'] - 200),
             'angle': random.uniform(0, math.pi * 2),
+            'hp': prof['maxHp'], 'maxHp': prof['maxHp'], 'deadTimer': 0, 
             'stunTimer': 0, 'rageTimer': 0, 'shootTimer': 0, 'textTimer': 90,
-            'text': prof['text'], 'profile': name
+            'text': prof['text']
         })
 
 create_global_bosses()
@@ -61,6 +62,16 @@ def game_loop():
             if current_players:
                 for boss in bosses_state:
                     prof = bossProfiles[boss['profile']]
+
+                    if boss.get('deadTimer', 0) > 0:
+                        boss['deadTimer'] -= frames
+                        if boss['deadTimer'] <= 0:
+                            boss['hp'] = prof['maxHp']
+                            boss['x'] = random.uniform(200, WORLD['w'] - 200)
+                            boss['y'] = random.uniform(200, WORLD['h'] - 200)
+                            boss['stunTimer'] = 0; boss['rageTimer'] = 0
+                            socketio.emit('kill_announcement', {'killer': 'SERVER', 'victim': f"⚠️ {boss['name']} เกิดใหม่แล้ว! ระวังตัวด้วย!"})
+                        continue
 
                     if boss['stunTimer'] > 0:
                         boss['stunTimer'] -= frames
@@ -88,12 +99,10 @@ def game_loop():
                         if prof['isSupreme']:
                             boss['shootTimer'] -= frames
                             if boss['shootTimer'] <= 0:
-                                # 🚨 สกิลพี่ตุ๊: ยิงกระจาย 12 ทิศ
                                 for i in range(12):
                                     a = (math.pi / 6) * i
                                     shots_state.append({'owner': boss['name'], 'x': boss['x'], 'y': boss['y'], 'tx': boss['x'] + math.cos(a)*700, 'ty': boss['y'] + math.sin(a)*700, 't': time.time()})
                                 boss['shootTimer'] = 80; boss['rageTimer'] = 0 
-                        
                         elif prof['canShoot']:
                             boss['shootTimer'] -= frames
                             if boss['shootTimer'] <= 0 and minDist < 700:
@@ -170,44 +179,46 @@ def handle_boss_hit(data):
     if 0 <= boss_index < len(bosses_state):
         boss = bosses_state[boss_index]
         prof = bossProfiles[boss['profile']]
-        boss['stunTimer'] = prof['stunTime']
-        boss['rageTimer'] = 180
-        boss['text'] = "หน็อยแน่ะ!! 😡" if prof['stunTime'] > 0 else "สาดมาสาดกลับ!"
-        boss['textTimer'] = 120
-        # 🚨 ลดคะแนนยิงบอสเหลือ +5
-        if p_name in players_state: players_state[p_name]['score'] += 5
+        
+        if boss.get('deadTimer', 0) > 0: return
+
+        boss['hp'] -= 1
+        
+        if boss['hp'] <= 0:
+            boss['deadTimer'] = 2700 
+            boss['x'] = -1000 
+            boss['y'] = -1000
+            if p_name in players_state: 
+                # 🚨 ให้คะแนนโบนัสตามระดับความโหดของบอสที่ยิงตาย
+                players_state[p_name]['score'] += prof['killScore'] 
+            socketio.emit('kill_announcement', {'killer': p_name, 'victim': boss['name']})
+        else:
+            boss['stunTimer'] = prof['stunTime']
+            boss['rageTimer'] = 180
+            boss['text'] = f"หน็อยแน่ะ! ({boss['hp']}/{prof['maxHp']})"
+            boss['textTimer'] = 120
+            if p_name in players_state: players_state[p_name]['score'] += 5
 
 @socketio.on('score_up')
 def handle_score_up(data):
     shooter = data.get('shooter')
-    # ยิงโดนเพื่อนเฉยๆ (ยังไม่ตาย) ได้ +10
     if shooter in players_state: players_state[shooter]['score'] += 10
 
-# 🚨 ระบบใหม่: แจ้งเตือนเมื่อมีการฆ่ากันเกิดขึ้น + คนโดนฆ่าคะแนนลด
 @socketio.on('player_killed')
 def handle_player_killed(data):
     killer = data.get('killer')
     victim = data.get('victim')
-    
-    # 1. คนยิง (killer) ได้ +50 คะแนน
-    if killer in players_state:
-        players_state[killer]['score'] += 50 
-        
-    # 2. คนโดนยิงตาย (victim) โดนหัก -20 คะแนน (คะแนนจะไม่ต่ำกว่า 0)
-    if victim in players_state:
-        players_state[victim]['score'] = max(0, players_state[victim]['score'] - 20)
-        
-    # บรอดแคสต์บอกทุกคนในห้องว่าใครฆ่าใคร
+    if killer in players_state: players_state[killer]['score'] += 50 
+    if victim in players_state: players_state[victim]['score'] = max(0, players_state[victim]['score'] - 20)
     socketio.emit('kill_announcement', {'killer': killer, 'victim': victim})
 
 @socketio.on('player_dead')
 def handle_player_dead(data):
     name, boss_name = data.get('name'), data.get('boss_name')
     if name in players_state:
-        # 🚨 โดนบอสจับก็โดนหัก -20 คะแนนเช่นกัน
         players_state[name]['score'] = max(0, players_state[name]['score'] - 20)
         for boss in bosses_state:
-            if boss['name'] == boss_name:
+            if boss['name'] == boss_name and boss.get('deadTimer', 0) <= 0:
                 boss['text'] = f"จับ {name} ได้แล้ว! 🎉"
                 boss['textTimer'] = 150
                 break

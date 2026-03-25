@@ -55,7 +55,6 @@
 <canvas id="gameCanvas"></canvas>
 
 <script>
-// 🚨 เชื่อมต่อเซิร์ฟเวอร์ด้วย Socket.IO ทันทีที่โหลดหน้าเว็บ
 const socket = io();
 
 const isMobile = window.innerWidth < 768;
@@ -121,8 +120,6 @@ function handleShoot(cx, cy) {
     const tx = my.x + (cx/cameraScale) - sw, ty = my.y + (cy/cameraScale) - sh;
     my.facingAngle = Math.atan2(ty-my.y, tx-my.x);
     createSplash(my.x, my.y, tx, ty, my.name, 0, isPowder);
-    
-    // 🚨 ส่งข้อมูลการยิงผ่าน Socket.IO 
     socket.emit('player_shoot', {name: my.name, x: my.x, y: my.y, tx: tx+(isPowder?100000:0), ty: ty});
 }
 
@@ -132,7 +129,9 @@ function createSplash(sx, sy, tx, ty, owner, offset, isP) {
 }
 
 function takeDamage(shooter, isP) {
-    if(my.invulTimer > 0) return;
+    // 🚨 หัวใจหลักของการแก้บั๊กวาป: ถ้าตายอยู่แล้ว ห้ามโดนยิงซ้ำเด็ดขาด!
+    if(my.hp <= 0 || my.invulTimer > 0) return; 
+    
     if(isP) { my.blindTimer = 90; }
     if (!shooter.startsWith("🕴️")) { socket.emit('score_up', {shooter: shooter}); }
 
@@ -140,6 +139,9 @@ function takeDamage(shooter, isP) {
     const f = document.getElementById('damage-flash'); f.style.opacity = 1; setTimeout(()=>f.style.opacity=0, 150);
     
     if(my.hp <= 0) {
+        // 🚨 ส่งข้อมูลบอกเซิร์ฟเวอร์ทันทีว่าตัวละครเราตายแล้วนะ
+        socket.emit('player_update', my); 
+        
         document.getElementById('boss-flash-title').innerText = "💦 ร่วงซะแล้ว...";
         document.getElementById('boss-flash').style.opacity=1;
         setTimeout(() => {
@@ -159,7 +161,6 @@ function updateUI() {
     document.getElementById('buff-text').innerText = b;
 }
 
-// 🚨 รับข้อมูลการเคลื่อนไหวของบอสและผู้เล่นคนอื่นแบบเรียลไทม์
 socket.on('world_update', (data) => {
     data.players.forEach(sp => {
         let lp = players.find(p => p.name === sp.name);
@@ -235,10 +236,10 @@ function update() {
                 updateUI(); items.splice(i,1);
             }
         }
-        
-        // 🚨 ส่งข้อมูลพิกัดตัวเองไปให้เซิร์ฟเวอร์แบบเรียลไทม์
-        socket.emit('player_update', my);
     }
+    
+    // 🚨 ย้ายคำสั่งส่งข้อมูลออกมาข้างนอก เพื่อให้เซิร์ฟเวอร์รู้ตลอดเวลาแม้กระทั่งตอนตาย!
+    socket.emit('player_update', my);
 
     players.forEach(p => { 
         if(p.name !== my.name && p.tx !== undefined){ 
@@ -258,6 +259,10 @@ function update() {
             if (Math.hypot(my.x - boss.x, my.y - boss.y) < boss.radius + my.radius) {
                 socket.emit('player_dead', {name:my.name, boss_name: boss.name});
                 my.hp = 0; my.ammo = 0; my.blindTimer = 0; updateUI(); 
+                
+                // 🚨 รีบส่งข้อมูลทันทีว่าโดนบอสจับตายแล้ว
+                socket.emit('player_update', my);
+                
                 document.getElementById('boss-flash-title').innerText = boss.name + " จับได้!!";
                 document.getElementById('boss-flash').style.opacity=1;
                 setTimeout(() => {

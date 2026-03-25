@@ -5,32 +5,35 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.1/socket.io.min.js"></script>
     <style>
-        html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; background: #000; font-family: 'Tahoma', sans-serif; touch-action: none; }
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;700&display=swap');
+        html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; background: #1a1a2e; font-family: 'Kanit', sans-serif; touch-action: none; }
         
-        /* 🚨 UI หน้าจอตั้งชื่อก่อนเริ่มเกม */
-        #start-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; display: flex; justify-content: center; align-items: center; }
-        .start-box { background: #fff; padding: 30px; border-radius: 15px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.5); max-width: 90%; width: 350px; }
-        .start-box h1 { color: #0078d4; margin-top: 0; font-size: 26px; }
-        .start-box p { color: #555; margin-bottom: 20px; font-size: 14px; }
-        .start-box input { width: 85%; padding: 12px; font-size: 18px; border: 2px solid #ccc; border-radius: 8px; margin-bottom: 20px; text-align: center; outline: none; transition: 0.3s;}
-        .start-box input:focus { border-color: #0078d4; }
-        .start-box button { background: #ff5722; color: #fff; border: none; padding: 12px 30px; font-size: 18px; font-weight: bold; border-radius: 8px; cursor: pointer; transition: 0.2s; width: 90%; }
+        /* 🚨 อัปเกรดหน้าเริ่มเกมให้หรูหรา */
+        #start-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); z-index: 2000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
+        .start-box { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(15px); padding: 40px; border-radius: 20px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.5); max-width: 90%; width: 380px; color: white; }
+        .start-box h1 { color: #00d2ff; margin-top: 0; font-size: 32px; text-shadow: 0 0 10px rgba(0, 210, 255, 0.5); letter-spacing: 1px;}
+        .start-box p { color: #ccc; margin-bottom: 25px; font-size: 16px; }
+        .start-box input { width: 85%; padding: 15px; font-size: 18px; font-family: 'Kanit'; background: rgba(0,0,0,0.5); color: #fff; border: 2px solid #00d2ff; border-radius: 10px; margin-bottom: 25px; text-align: center; outline: none; transition: 0.3s;}
+        .start-box input:focus { box-shadow: 0 0 15px rgba(0, 210, 255, 0.5); }
+        .start-box button { background: linear-gradient(45deg, #00d2ff, #3a7bd5); color: #fff; border: none; padding: 15px 30px; font-size: 20px; font-weight: bold; border-radius: 10px; cursor: pointer; transition: 0.2s; width: 95%; font-family: 'Kanit'; box-shadow: 0 5px 15px rgba(0, 210, 255, 0.4);}
         .start-box button:active { transform: scale(0.95); }
 
-        #ui { position: absolute; top: 10px; left: 10px; color: #333; background: rgba(255,255,255,0.9); padding: 12px; border-radius: 5px; border-left: 5px solid #0078d4; z-index: 10; font-size: 14px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); pointer-events: none; display: none;} /* ซ่อนไว้ก่อนเริ่มเกม */
-        #ammo-bar { width: 150px; height: 12px; background: #eee; border-radius: 6px; overflow: hidden; margin-top: 5px; border: 1px solid #ccc; }
-        #ammo-fill { width: 100%; height: 100%; background: #0078d4; transition: width 0.1s; }
+        /* 🚨 อัปเกรด UI ให้เป็นแบบกระจกโปร่งแสง (Glassmorphism) */
+        #ui { position: absolute; top: 15px; left: 15px; color: #fff; background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); border-left: 5px solid #00d2ff; z-index: 10; font-size: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); pointer-events: none; display: none;}
+        #ammo-bar { width: 160px; height: 14px; background: rgba(0,0,0,0.5); border-radius: 7px; overflow: hidden; margin-top: 8px; border: 1px solid rgba(255,255,255,0.2); }
+        #ammo-fill { width: 100%; height: 100%; background: linear-gradient(90deg, #00d2ff, #3a7bd5); transition: width 0.1s; box-shadow: 0 0 10px rgba(0, 210, 255, 0.8);}
         
-        #leaderboard { position: absolute; top: 10px; right: 10px; width: 140px; color: #fff; background: rgba(0,0,0,0.7); padding: 10px; border-radius: 5px; z-index: 10; font-size: 12px; pointer-events: none; display: none;} /* ซ่อนไว้ก่อนเริ่มเกม */
-        .lb-row { display: flex; justify-content: space-between; border-bottom: 1px solid #555; padding: 3px 0; }
+        #leaderboard { position: absolute; top: 15px; right: 15px; width: 160px; color: #fff; background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); z-index: 10; font-size: 14px; pointer-events: none; display: none; box-shadow: 0 8px 32px rgba(0,0,0,0.3);}
+        .lb-row { display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding: 5px 0; }
         
-        #damage-flash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(233, 30, 99, 0.4); pointer-events: none; opacity: 0; transition: opacity 0.1s; z-index: 998; }
+        #damage-flash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, rgba(233, 30, 99, 0) 50%, rgba(233, 30, 99, 0.6) 100%); pointer-events: none; opacity: 0; transition: opacity 0.1s; z-index: 998; }
         #blind-flash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.98); pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 999; display: flex; justify-content: center; align-items: center; flex-direction: column; }
-        #boss-flash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(211, 47, 47, 0.9); pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 1000; display: flex; justify-content: center; align-items: center; flex-direction: column; }
-        #kill-flash { position: fixed; top: 25%; left: 50%; transform: translateX(-50%); font-size: 24px; font-weight: bold; text-shadow: 2px 2px 5px rgba(0,0,0,0.8); z-index: 1001; opacity: 0; transition: opacity 0.3s, transform 0.3s; pointer-events: none; background: rgba(0,0,0,0.5); padding: 10px 20px; border-radius: 10px; border: 2px solid white; text-align: center;}
+        #boss-flash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(211, 47, 47, 0.95); pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 1000; display: flex; justify-content: center; align-items: center; flex-direction: column; backdrop-filter: blur(5px);}
 
-        #joy-move-zone { position: absolute; bottom: 30px; left: 30px; width: 120px; height: 120px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); border-radius: 50%; z-index: 20; touch-action: none; display: none;} /* ซ่อนไว้ก่อนเริ่มเกม */
-        #joy-move-knob { position: absolute; top: 35px; left: 35px; width: 50px; height: 50px; border-radius: 50%; pointer-events: none; background: rgba(0, 120, 212, 0.8); }
+        #kill-flash { position: fixed; top: 20%; left: 50%; transform: translateX(-50%); font-size: 26px; font-weight: bold; text-shadow: 0 4px 10px rgba(0,0,0,0.8); z-index: 1001; opacity: 0; transition: opacity 0.3s, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none; background: linear-gradient(90deg, rgba(0,0,0,0), rgba(0,0,0,0.8), rgba(0,0,0,0)); padding: 15px 40px; text-align: center; width: 100%;}
+
+        #joy-move-zone { position: absolute; bottom: 40px; left: 40px; width: 130px; height: 130px; background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1); border-radius: 50%; z-index: 20; touch-action: none; display: none; backdrop-filter: blur(5px);}
+        #joy-move-knob { position: absolute; top: 40px; left: 40px; width: 50px; height: 50px; border-radius: 50%; pointer-events: none; background: radial-gradient(circle, rgba(0, 210, 255, 0.8), rgba(58, 123, 213, 0.8)); box-shadow: 0 0 15px rgba(0, 210, 255, 0.5);}
         
         canvas { display: block; width: 100vw; height: 100vh; }
         @media (max-width: 768px) { .hide-mobile { display: none !important; } }
@@ -40,31 +43,31 @@
 
 <div id="start-screen">
     <div class="start-box">
-        <h1>💦 DCO สงกรานต์</h1>
-        <p>ยินดีต้อนรับ! โปรดตั้งชื่อของคุณก่อนลงสนาม</p>
-        <input type="text" id="startNameInput" placeholder="พิมพ์ชื่อพนักงาน..." maxlength="15"><br>
-        <button id="startBtn">เข้าสู่ออฟฟิศ! 🔫</button>
+        <h1>💦 DCO THE SURVIVAL</h1>
+        <p>สงครามสาดน้ำแห่งออฟฟิศ เริ่มขึ้นแล้ว!</p>
+        <input type="text" id="startNameInput" placeholder="พิมพ์ชื่อพนักงาน..." maxlength="12"><br>
+        <button id="startBtn">ลงสนามสาดน้ำ! 🔫</button>
     </div>
 </div>
 
 <div id="damage-flash"></div>
-<div id="blind-flash"><h1 style="color:#e91e63">โดนปะแป้งเต็มตา!</h1><p style="color:#333">มองไม่เห็น 3 วินาที...</p></div>
+<div id="blind-flash"><h1 style="color:#e91e63; font-size: 40px;">โดนปะแป้งเต็มตา!</h1><p style="color:#333; font-size: 20px;">มองไม่เห็น 3 วินาที...</p></div>
 <div id="boss-flash">
-    <h1 id="boss-flash-title" style="color:#ffeb3b">โดนตามงานด่วน!!</h1>
-    <p id="boss-flash-desc" style="color:white; font-size:20px;">💀 ตายแล้ว! กำลังเกิดใหม่...</p>
+    <h1 id="boss-flash-title" style="color:#ffeb3b; font-size: 45px; text-shadow: 0 0 20px rgba(255,235,59,0.8);">โดนตามงานด่วน!!</h1>
+    <p id="boss-flash-desc" style="color:white; font-size:24px;">💀 เตรียมตัวเกิดใหม่...</p>
 </div>
 <div id="kill-flash"></div>
 
 <div id="ui">
-    <b>📎 พนักงาน: <span id="pNameDisplay" style="color:#0078d4; font-size:16px;"></span></b><br>
-    พลังใจ: <span id="hp-text">❤️❤️❤️❤️❤️</span><br>
-    กระสุนน้ำ: <span id="ammo-text">15 / 15</span>
+    <b style="font-size: 16px;">📎 พนักงาน: <span id="pNameDisplay" style="color:#00d2ff; text-shadow: 0 0 5px rgba(0,210,255,0.5);"></span></b><br>
+    <div style="margin-top: 5px;">พลังใจ: <span id="hp-text">❤️❤️❤️❤️❤️</span></div>
+    <div style="margin-top: 5px;">กระสุนน้ำ: <span id="ammo-text" style="color:#00d2ff; font-weight:bold;">15 / 15</span></div>
     <div id="ammo-bar"><div id="ammo-fill"></div></div>
-    <div id="buff-text" style="margin-top:5px; font-weight:bold; color:#d32f2f; height: 15px;"></div>
+    <div id="buff-text" style="margin-top:8px; font-weight:bold; color:#ffeb3b; height: 18px; text-shadow: 0 0 5px rgba(255,235,59,0.5);"></div>
 </div>
 
 <div id="leaderboard" class="hide-mobile">
-    <div style="text-align:center; font-weight:bold; border-bottom:1px solid #fff; margin-bottom:5px;">Top Staff</div>
+    <div style="text-align:center; font-weight:bold; border-bottom:2px solid #00d2ff; margin-bottom:10px; padding-bottom: 5px; color:#00d2ff; text-shadow: 0 0 5px rgba(0,210,255,0.5);">🏆 TOP STAFF 🏆</div>
     <div id="lb-content"></div>
 </div>
 
@@ -84,10 +87,7 @@ const ctx = canvas.getContext('2d');
 function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
 window.addEventListener('resize', resizeCanvas); resizeCanvas(); 
 
-// 🚨 ตัวแปรคุมสถานะเกม
 let gameStarted = false;
-
-// ตอนเข้ามาแรกสุด ให้กล้องจับภาพกลางแมพ
 let my = { name: "", x: WORLD.w/2, y: WORLD.h/2, hp: 5, ammo: 15, maxAmmo: 15, radius: 20, is_hidden: false, facingAngle: 0, vx: 0, vy: 0, speedTimer: 0, powderAmmo: 0, bombAmmo: 0, blindTimer: 0, invulTimer: 180, isTop1: false };
 
 let bosses = []; let players = []; let localSplashes = []; let processedShots = new Set(); let items = [];
@@ -95,36 +95,22 @@ let bosses = []; let players = []; let localSplashes = []; let processedShots = 
 const waterCoolers = [{x:2000,y:1750,r:180}, {x:400,y:400,r:100}, {x:3600,y:400,r:100}, {x:400,y:3100,r:100}, {x:3600,y:3100,r:100}, {x:2000,y:500,r:90}, {x:2000,y:3000,r:90}];
 const paperStacks = [{x:1000,y:800,r:140}, {x:3000,y:800,r:140}, {x:1000,y:2700,r:140}, {x:3000,y:2700,r:140}, {x:200,y:1750,r:120}];
 const partitions = [
-    {x:1700,y:1400,w:200,h:30}, {x:2100,y:1400,w:200,h:30}, {x:1700,y:2070,w:200,h:30}, {x:2100,y:2070,w:200,h:30},
-    {x:1700,y:1400,w:30,h:250}, {x:1700,y:1850,w:30,h:250}, {x:2270,y:1400,w:30,h:250}, {x:2270,y:1850,w:30,h:250},
-    {x:800,y:600,w:400,h:30}, {x:2800,y:2300,w:500,h:30}, {x:600,y:2500,w:30,h:500}
+    {x:1700,y:1400,w:200,h:40}, {x:2100,y:1400,w:200,h:40}, {x:1700,y:2070,w:200,h:40}, {x:2100,y:2070,w:200,h:40},
+    {x:1700,y:1400,w:40,h:250}, {x:1700,y:1850,w:40,h:250}, {x:2270,y:1400,w:40,h:250}, {x:2270,y:1850,w:40,h:250},
+    {x:800,y:600,w:400,h:40}, {x:2800,y:2300,w:500,h:40}, {x:600,y:2500,w:40,h:500}
 ];
 const copiers = [{x:2500,y:1100,r:150}, {x:1500,y:2500,r:150}, {x:800,y:1500,r:120}]; 
 const wetFloors = [{x:2000,y:1750,r:320}, {x:1000,y:2000,r:200}, {x:3000,y:1500,r:200}]; 
 
-// 🚨 จัดการเมื่อกดปุ่ม "เข้าสู่ออฟฟิศ!"
 document.getElementById('startBtn').addEventListener('click', () => {
     let inputName = document.getElementById('startNameInput').value.trim();
-    if (!inputName) {
-        inputName = "Staff_" + Math.floor(Math.random() * 1000); // ถ้าไม่กรอก สุ่มชื่อให้
-    }
-    
-    my.name = inputName;
-    document.getElementById('pNameDisplay').innerText = my.name;
-    
-    // ซ่อนหน้าเริ่มเกม เปิด UI
+    if (!inputName) inputName = "Staff_" + Math.floor(Math.random() * 1000);
+    my.name = inputName; document.getElementById('pNameDisplay').innerText = my.name;
     document.getElementById('start-screen').style.display = 'none';
-    document.getElementById('ui').style.display = 'block';
-    document.getElementById('leaderboard').style.display = 'block';
+    document.getElementById('ui').style.display = 'block'; document.getElementById('leaderboard').style.display = 'block';
     if (isMobile) document.getElementById('joy-move-zone').style.display = 'block';
-    
-    // สุ่มจุดเกิดและเซ็ตสถานะ
-    my.x = Math.random() * (WORLD.w - 400) + 200;
-    my.y = Math.random() * (WORLD.h - 400) + 200;
-    my.hp = 5;
-    my.invulTimer = 180;
-    
-    gameStarted = true; // 🚨 สับสวิตช์เริ่มเกม!
+    my.x = Math.random() * (WORLD.w - 400) + 200; my.y = Math.random() * (WORLD.h - 400) + 200; my.hp = 5; my.invulTimer = 180;
+    gameStarted = true;
 });
 
 const keys = {}; window.onkeydown = e => keys[e.code] = true; window.onkeyup = e => keys[e.code] = false;
@@ -135,23 +121,17 @@ const moveZone = document.getElementById('joy-move-zone'), moveKnob = document.g
 moveZone.addEventListener('touchstart', e => { e.preventDefault(); let t = e.changedTouches[0]; moveTouchId = t.identifier; updateMoveJoy(t); }, {passive: false});
 moveZone.addEventListener('touchmove', e => { e.preventDefault(); for(let t of e.changedTouches) if(t.identifier === moveTouchId) updateMoveJoy(t); }, {passive: false});
 moveZone.addEventListener('touchend', e => { for(let t of e.changedTouches) if(t.identifier === moveTouchId){ moveJoyX = 0; moveJoyY = 0; moveKnob.style.transform = `translate(0,0)`; moveTouchId = null; } });
-function updateMoveJoy(t) { const r = moveZone.getBoundingClientRect(); let x = t.clientX - r.left - 60, y = t.clientY - r.top - 60; let d = Math.hypot(x,y); if(d > 35){ x=(x/d)*35; y=(y/d)*35; } moveKnob.style.transform = `translate(${x}px,${y}px)`; moveJoyX = x/35; moveJoyY = y/35; }
+function updateMoveJoy(t) { const r = moveZone.getBoundingClientRect(); let x = t.clientX - r.left - 65, y = t.clientY - r.top - 65; let d = Math.hypot(x,y); if(d > 40){ x=(x/d)*40; y=(y/d)*40; } moveKnob.style.transform = `translate(${x}px,${y}px)`; moveJoyX = x/40; moveJoyY = y/40; }
 
 canvas.addEventListener('mousedown', e => handleShoot(e.clientX, e.clientY));
 canvas.addEventListener('touchstart', e => { if(e.target === canvas){ e.preventDefault(); handleShoot(e.changedTouches[0].clientX, e.changedTouches[0].clientY); } }, {passive: false});
 
 function handleShoot(cx, cy) {
-    if(!gameStarted || my.ammo < 1 || my.hp <= 0) return; // 🚨 ถ้ายังไม่เริ่มเกม ห้ามยิง
+    if(!gameStarted || my.ammo < 1 || my.hp <= 0) return;
     
     if (my.bombAmmo > 0) {
         my.bombAmmo--; my.ammo--; updateUI();
-        for(let i=0; i<8; i++) {
-            let angle = (Math.PI / 4) * i;
-            let tx = my.x + Math.cos(angle) * 800;
-            let ty = my.y + Math.sin(angle) * 800;
-            createSplash(my.x, my.y, tx, ty, my.name, 0, false);
-            socket.emit('player_shoot', {name: my.name, x: my.x, y: my.y, tx: tx, ty: ty});
-        }
+        for(let i=0; i<8; i++) { let angle = (Math.PI / 4) * i; let tx = my.x + Math.cos(angle) * 800; let ty = my.y + Math.sin(angle) * 800; createSplash(my.x, my.y, tx, ty, my.name, 0, false); socket.emit('player_shoot', {name: my.name, x: my.x, y: my.y, tx: tx, ty: ty}); }
         return;
     }
 
@@ -165,12 +145,11 @@ function handleShoot(cx, cy) {
 
 function createSplash(sx, sy, tx, ty, owner, offset, isP) {
     let a = Math.atan2(ty-sy, tx-sx) + offset;
-    localSplashes.push({x:sx, y:sy, vx:Math.cos(a)*20, vy:Math.sin(a)*20, life:60, owner:owner, isP:isP});
+    localSplashes.push({x:sx, y:sy, vx:Math.cos(a)*22, vy:Math.sin(a)*22, life:50, owner:owner, isP:isP});
 }
 
 function takeDamage(shooter, isP) {
-    if(!gameStarted || my.hp <= 0 || my.invulTimer > 0) return; // 🚨 ถ้ายังไม่เริ่มเกม ห้ามรับดาเมจ
-    
+    if(!gameStarted || my.hp <= 0 || my.invulTimer > 0) return; 
     if(isP) { my.blindTimer = 90; }
     if (!shooter.startsWith("🕴️")) { socket.emit('score_up', {shooter: shooter}); }
 
@@ -180,14 +159,10 @@ function takeDamage(shooter, isP) {
     if(my.hp <= 0) {
         socket.emit('player_update', my); 
         if (!shooter.startsWith("🕴️")) { socket.emit('player_killed', {killer: shooter, victim: my.name}); }
-        
-        document.getElementById('boss-flash-title').innerText = "💦 ร่วงซะแล้ว...";
+        document.getElementById('boss-flash-title').innerText = "💦 โดนสาดร่วงซะแล้ว..."; document.getElementById('boss-flash-title').style.color = "#ffeb3b";
         document.getElementById('boss-flash').style.opacity=1;
         setTimeout(() => {
-            document.getElementById('boss-flash').style.opacity=0;
-            my.x = Math.random() * (WORLD.w - 400) + 200; my.y = Math.random() * (WORLD.h - 400) + 200;
-            my.hp=5; my.ammo=0; my.vx=0; my.vy=0; my.speedTimer=0; my.powderAmmo=0; my.bombAmmo=0; my.invulTimer=180; my.blindTimer=0; 
-            updateUI();
+            document.getElementById('boss-flash').style.opacity=0; my.x = Math.random() * (WORLD.w - 400) + 200; my.y = Math.random() * (WORLD.h - 400) + 200; my.hp=5; my.ammo=0; my.vx=0; my.vy=0; my.speedTimer=0; my.powderAmmo=0; my.bombAmmo=0; my.invulTimer=180; my.blindTimer=0; updateUI();
         }, 1500);
     }
 }
@@ -196,25 +171,21 @@ function updateUI() {
     document.getElementById('ammo-text').innerText = `${Math.floor(my.ammo)} / ${my.maxAmmo}`;
     document.getElementById('ammo-fill').style.width = (my.ammo/my.maxAmmo*100) + "%";
     document.getElementById('hp-text').innerText = "❤️".repeat(Math.max(0, my.hp)) + "🤍".repeat(Math.max(0, 5-my.hp));
-    let b = ""; if(my.speedTimer > 0) b += "🌿 ยาดมออกฤทธิ์! "; if(my.powderAmmo > 0) b += `☁️ แป้ง (${my.powderAmmo}) `; if(my.bombAmmo > 0) b += `💣 ระเบิดน้ำ (${my.bombAmmo})`; 
-    document.getElementById('buff-text').innerText = b;
+    let b = ""; if(my.speedTimer > 0) b += "🌿 ยาดมออกฤทธิ์! "; if(my.powderAmmo > 0) b += `☁️ แป้ง (${my.powderAmmo}) `; if(my.bombAmmo > 0) b += `💣 ระเบิดน้ำ (${my.bombAmmo})`; document.getElementById('buff-text').innerText = b;
 }
 
 socket.on('kill_announcement', (data) => {
     const kf = document.getElementById('kill-flash');
     if(data.killer === 'SERVER') {
         kf.innerHTML = `⚠️ <span style="color:#ff5252;">${data.victim}</span>`;
-        kf.style.color = "#fff"; kf.style.borderColor = "#ff5252";
     }
     else if(data.killer === my.name) {
-        kf.innerHTML = `🔥 คุณจัดการ <b>${data.victim}</b> ได้สำเร็จ!<br><span style="color:#4caf50;">+ โบนัสคะแนน!</span>`;
-        kf.style.color = "#ffeb3b"; kf.style.borderColor = "#ffeb3b";
+        kf.innerHTML = `🔥 คุณจัดการ <b>${data.victim}</b> ได้สำเร็จ!<br><span style="color:#ffeb3b; font-size:18px;">+ โบนัสคะแนน!</span>`;
     } else {
-        kf.innerHTML = `💀 <b>${data.killer}</b> พิชิต <b>${data.victim}</b> ร่วง!`;
-        kf.style.color = "#ff5252"; kf.style.borderColor = "#ff5252";
+        kf.innerHTML = `💀 <b style="color:#00d2ff">${data.killer}</b> พิชิต <b style="color:#ff5252">${data.victim}</b> ร่วง!`;
     }
-    kf.style.opacity = 1; kf.style.transform = "translateX(-50%) translateY(20px)";
-    setTimeout(() => { kf.style.opacity = 0; kf.style.transform = "translateX(-50%) translateY(0px)"; }, 3000);
+    kf.style.opacity = 1; kf.style.transform = "translateX(-50%) translateY(40px) scale(1.1)";
+    setTimeout(() => { kf.style.opacity = 0; kf.style.transform = "translateX(-50%) translateY(0px) scale(1)"; }, 3500);
 });
 
 socket.on('world_update', (data) => {
@@ -235,34 +206,27 @@ socket.on('world_update', (data) => {
     });
     bosses = bosses.filter(lb => data.bosses.some(sb => sb.name === lb.name));
 
-    let html = ""; data.players.slice(0,5).forEach((p,i) => html += `<div class="lb-row"><span>${i===0?'👑':''}${i+1}. ${p.name}</span><span>${p.score}</span></div>`);
+    let html = ""; data.players.slice(0,5).forEach((p,i) => html += `<div class="lb-row"><span style="color:${i===0?'#ffeb3b':'white'};">${i===0?'👑':''}${i+1}. ${p.name}</span><span style="font-weight:bold; color:#00d2ff;">${p.score}</span></div>`);
     document.getElementById('lb-content').innerHTML = html;
     
     data.shots.forEach(s => {
         let shotKey = s.owner + "_" + s.x + "_" + s.y + "_" + s.tx + "_" + s.ty + "_" + s.t;
-        if(s.owner !== my.name && !processedShots.has(shotKey)){
-            let isP = s.tx > 50000; createSplash(s.x, s.y, isP ? s.tx-100000 : s.tx, s.ty, s.owner, 0, isP); processedShots.add(shotKey);
-        }
+        if(s.owner !== my.name && !processedShots.has(shotKey)){ let isP = s.tx > 50000; createSplash(s.x, s.y, isP ? s.tx-100000 : s.tx, s.ty, s.owner, 0, isP); processedShots.add(shotKey); }
     });
 });
 
 function update() {
-    // 🚨 ถ้ากดเข้าเกมแล้ว ถึงจะคำนวณการเดินและส่งข้อมูลให้เซิร์ฟเวอร์
     if (gameStarted) {
         if (my.hp > 0) {
-            let s = 5; if(my.speedTimer > 0){ s = 8.5; my.speedTimer--; if(my.speedTimer===0) updateUI(); }
+            let s = 5.5; if(my.speedTimer > 0){ s = 9; my.speedTimer--; if(my.speedTimer===0) updateUI(); }
             if(my.invulTimer > 0) my.invulTimer--;
-            if (my.blindTimer > 0) my.blindTimer--;
-            document.getElementById('blind-flash').style.opacity = my.blindTimer > 0 ? 0.98 : 0;
-            
+            if (my.blindTimer > 0) my.blindTimer--; document.getElementById('blind-flash').style.opacity = my.blindTimer > 0 ? 0.98 : 0;
             if(copiers.some(m => Math.hypot(my.x-m.x, my.y-m.y) < m.r)) s *= 0.4;
             let ice = wetFloors.some(f => Math.hypot(my.x-f.x, my.y-f.y) < f.r);
             
             let ix = 0, iy = 0;
-            if(keys['KeyW'] || keys['ArrowUp']) iy -= s;
-            if(keys['KeyS'] || keys['ArrowDown']) iy += s;
-            if(keys['KeyA'] || keys['ArrowLeft']) ix -= s;
-            if(keys['KeyD'] || keys['ArrowRight']) ix += s;
+            if(keys['KeyW'] || keys['ArrowUp']) iy -= s; if(keys['KeyS'] || keys['ArrowDown']) iy += s;
+            if(keys['KeyA'] || keys['ArrowLeft']) ix -= s; if(keys['KeyD'] || keys['ArrowRight']) ix += s;
             if(moveJoyX !== 0 || moveJoyY !== 0) { ix = moveJoyX * s; iy = moveJoyY * s; }
             
             if(ice){ my.vx = my.vx*0.96 + ix*0.04; my.vy = my.vy*0.96 + iy*0.04; } else { my.vx = ix; my.vy = iy; }
@@ -270,17 +234,16 @@ function update() {
             let nx = my.x + my.vx, ny = my.y + my.vy;
             let hw = partitions.some(p => nx+20 > p.x && nx-20 < p.x+p.w && my.y+20 > p.y && my.y-20 < p.y+p.h);
             let hh = partitions.some(p => my.x+20 > p.x && my.x-20 < p.x+p.w && ny+20 > p.y && ny-20 < p.y+p.h);
-            if(!hw) my.x = Math.max(20, Math.min(WORLD.w-20, nx));
-            if(!hh) my.y = Math.max(20, Math.min(WORLD.h-20, ny));
+            if(!hw) my.x = Math.max(20, Math.min(WORLD.w-20, nx)); if(!hh) my.y = Math.max(20, Math.min(WORLD.h-20, ny));
 
             my.is_hidden = paperStacks.some(p => Math.hypot(my.x-p.x, my.y-p.y) < p.r);
-            waterCoolers.forEach(c => { if(Math.hypot(my.x-c.x, my.y-c.y) < c.r) { if (my.ammo < my.maxAmmo) my.ammo = Math.min(my.maxAmmo, my.ammo+0.3); updateUI(); } });
+            waterCoolers.forEach(c => { if(Math.hypot(my.x-c.x, my.y-c.y) < c.r) { if (my.ammo < my.maxAmmo) my.ammo = Math.min(my.maxAmmo, my.ammo+0.4); updateUI(); } });
 
             if(Math.random() < 0.02 && items.length < 15){
                 let ix = Math.random()*(WORLD.w-200)+100, iy = Math.random()*(WORLD.h-200)+100;
                 if(!partitions.some(p => ix > p.x && ix < p.x+p.w && iy > p.y && iy < p.y+p.h)) { 
                     let rnd = Math.random(); let iType = rnd > 0.85 ? 'bomb' : (rnd > 0.4 ? 'yadom' : 'powder');
-                    items.push({x:ix, y:iy, type: iType, life:900}); 
+                    items.push({x:ix, y:iy, type: iType, life:1200}); 
                 }
             }
             for(let i=items.length-1; i>=0; i--){
@@ -291,24 +254,19 @@ function update() {
                 }
             }
         }
-        
-        socket.emit('player_update', my); // ส่งข้อมูลให้คนอื่นเห็น
+        socket.emit('player_update', my); 
     }
 
     players.forEach(p => { if(p.name !== my.name && p.tx !== undefined){ let d = Math.hypot(p.tx-p.x, p.ty-p.y); if(d > 300) { p.x = p.tx; p.y = p.ty; } else { p.x += (p.tx - p.x) * 0.4; p.y += (p.ty - p.y) * 0.4; } } });
 
     bosses.forEach(boss => {
         if (boss.hp <= 0 || boss.deadTimer > 0) return;
-
         if (boss.tx !== undefined) { let d = Math.hypot(boss.tx - boss.x, boss.ty - boss.y); if (d > 300) { boss.x = boss.tx; boss.y = boss.ty; } else { boss.x += (boss.tx - boss.x) * 0.4; boss.y += (boss.ty - boss.y) * 0.4; } }
-        
-        // 🚨 เช็คการชนบอสเฉพาะตอนที่เริ่มเกมแล้วเท่านั้น
         if (gameStarted && my.hp > 0 && my.invulTimer <= 0) {
             if (Math.hypot(my.x - boss.x, my.y - boss.y) < boss.radius + my.radius) {
                 socket.emit('player_dead', {name:my.name, boss_name: boss.name});
-                my.hp = 0; my.ammo = 0; my.blindTimer = 0; updateUI(); 
-                socket.emit('player_update', my);
-                document.getElementById('boss-flash-title').innerText = boss.name + " จับได้!!";
+                my.hp = 0; my.ammo = 0; my.blindTimer = 0; updateUI(); socket.emit('player_update', my);
+                document.getElementById('boss-flash-title').innerText = boss.name + " จับได้!!"; document.getElementById('boss-flash-title').style.color = "#ff5252";
                 document.getElementById('boss-flash').style.opacity=1;
                 setTimeout(() => { document.getElementById('boss-flash').style.opacity=0; my.x = Math.random() * (WORLD.w - 400) + 200; my.y = Math.random() * (WORLD.h - 400) + 200; my.hp = 5; my.ammo = 0; my.vx = 0; my.vy = 0; my.speedTimer = 0; my.powderAmmo = 0; my.bombAmmo = 0; my.invulTimer = 180; updateUI(); }, 2500);
             }
@@ -327,109 +285,169 @@ function update() {
         let s = localSplashes[i]; s.x+=s.vx; s.y+=s.vy; s.life--;
         let hitW = partitions.some(p => s.x>p.x && s.x<p.x+p.w && s.y>p.y && s.y<p.y+p.h);
         let hitS = false;
-        
         if (gameStarted && s.owner === my.name) {
-            for (let b = 0; b < bosses.length; b++) { 
-                if (bosses[b].hp <= 0 || bosses[b].deadTimer > 0) continue;
-                if (Math.hypot(s.x-bosses[b].x, s.y-bosses[b].y) < bosses[b].radius + 15) { hitS = true; socket.emit('boss_hit', {name:my.name, boss_id: b}); break; } 
-            }
+            for (let b = 0; b < bosses.length; b++) { if (bosses[b].hp <= 0 || bosses[b].deadTimer > 0) continue; if (Math.hypot(s.x-bosses[b].x, s.y-bosses[b].y) < bosses[b].radius + 15) { hitS = true; socket.emit('boss_hit', {name:my.name, boss_id: b}); break; } }
         }
-        
-        // 🚨 เช็คว่าเราโดนยิงไหม เฉพาะตอนที่เริ่มเกมแล้ว
         if(gameStarted && !hitS && s.owner !== my.name && Math.hypot(s.x-my.x, s.y-my.y) < 35){ takeDamage(s.owner, s.isP); hitS=true; }
-        
         if(!hitS) for(let p of players) if(p.name!==my.name && p.name!==s.owner && p.hp>0 && Math.hypot(s.x-p.x, s.y-p.y)<35){ hitS=true; break; }
         if(s.life<=0 || hitW || hitS) localSplashes.splice(i,1);
     }
     draw(); requestAnimationFrame(update);
 }
 
+// 🚨 ฟังก์ชันวาดภาพที่มีการใส่แสงและเงาให้สวยขึ้น
 function draw() {
-    ctx.fillStyle = "#000"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#111827"; ctx.fillRect(0, 0, canvas.width, canvas.height); // สีพื้นหลังออฟฟิศโทนเข้ม
     ctx.save(); 
     let now = Math.floor(Date.now() / 1000); let isBlackout = (now % 60) < 10;
     ctx.scale(cameraScale, cameraScale); ctx.translate(-(my.x - (canvas.width/2)/cameraScale), -(my.y - (canvas.height/2)/cameraScale));
-    ctx.fillStyle = "#f5f5f5"; ctx.fillRect(0,0,WORLD.w,WORLD.h);
     
-    ctx.strokeStyle = "#ddd"; ctx.lineWidth = 1;
-    for(let i=0; i<WORLD.w; i+=100){ ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,WORLD.h); ctx.stroke(); }
-    for(let i=0; i<WORLD.h; i+=100){ ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(WORLD.w,i); ctx.stroke(); }
+    // วาดพื้นลายตารางหมากรุกสวยๆ
+    ctx.fillStyle = "#1e293b"; ctx.fillRect(0,0,WORLD.w,WORLD.h);
+    ctx.strokeStyle = "rgba(255,255,255,0.05)"; ctx.lineWidth = 2;
+    for(let i=0; i<=WORLD.w; i+=100){ ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,WORLD.h); ctx.stroke(); }
+    for(let i=0; i<=WORLD.h; i+=100){ ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(WORLD.w,i); ctx.stroke(); }
 
-    copiers.forEach(m => { ctx.fillStyle="rgba(158,158,158,0.5)"; ctx.beginPath(); ctx.arc(m.x,m.y,m.r,0,Math.PI*2); ctx.fill(); });
-    wetFloors.forEach(f => { ctx.fillStyle="rgba(0,188,212,0.15)"; ctx.beginPath(); ctx.arc(f.x,f.y,f.r,0,Math.PI*2); ctx.fill(); });
-    waterCoolers.forEach(c => { ctx.fillStyle="#0078d4"; ctx.beginPath(); ctx.arc(c.x,c.y,c.r,0,Math.PI*2); ctx.fill(); ctx.fillStyle="#fff"; ctx.font="bold 20px Arial"; ctx.fillText("ตู้กดน้ำ 💧", c.x-45, c.y); });
-    ctx.fillStyle="#00bcd4"; partitions.forEach(p => ctx.fillRect(p.x,p.y,p.w,p.h));
-    paperStacks.forEach(p => { ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill(); ctx.strokeStyle="#ccc"; ctx.stroke(); ctx.fillStyle="#999"; ctx.fillText("กองเอกสาร", p.x-40, p.y); });
+    // แสงเงาของสิ่งของ (Drop Shadow)
+    ctx.shadowColor = "rgba(0,0,0,0.5)"; ctx.shadowBlur = 15; ctx.shadowOffsetY = 10;
 
+    copiers.forEach(m => { 
+        let grad = ctx.createLinearGradient(m.x-m.r, m.y-m.r, m.x+m.r, m.y+m.r);
+        grad.addColorStop(0, "#475569"); grad.addColorStop(1, "#1e293b");
+        ctx.fillStyle=grad; ctx.beginPath(); ctx.arc(m.x,m.y,m.r,0,Math.PI*2); ctx.fill(); 
+        ctx.fillStyle="#00d2ff"; ctx.fillRect(m.x-20, m.y-20, 40, 10); // แสงไฟเครื่องถ่ายเอกสาร
+    });
+    
+    ctx.shadowBlur = 0; ctx.shadowOffsetY = 0; // ปิดเงาสำหรับบ่อน้ำ
+    wetFloors.forEach(f => { ctx.fillStyle="rgba(0, 210, 255, 0.1)"; ctx.beginPath(); ctx.arc(f.x,f.y,f.r,0,Math.PI*2); ctx.fill(); });
+    
+    ctx.shadowBlur = 10; ctx.shadowOffsetY = 5;
+    waterCoolers.forEach(c => { 
+        let grad = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, c.r);
+        grad.addColorStop(0, "#00d2ff"); grad.addColorStop(1, "#3a7bd5");
+        ctx.fillStyle=grad; ctx.beginPath(); ctx.arc(c.x,c.y,c.r,0,Math.PI*2); ctx.fill(); 
+        ctx.fillStyle="#fff"; ctx.font="bold 22px Kanit"; ctx.textAlign="center"; ctx.fillText("ตู้กดน้ำ 💧", c.x, c.y+8); 
+    });
+    
+    // วาดฉากกั้นพาร์ทิชันให้ดูมีมิติ
+    partitions.forEach(p => { 
+        let grad = ctx.createLinearGradient(p.x, p.y, p.x+p.w, p.y+p.h);
+        grad.addColorStop(0, "#334155"); grad.addColorStop(1, "#1e293b");
+        ctx.fillStyle=grad; ctx.fillRect(p.x,p.y,p.w,p.h); 
+        ctx.strokeStyle="#00d2ff"; ctx.lineWidth=2; ctx.strokeRect(p.x,p.y,p.w,p.h);
+    });
+
+    paperStacks.forEach(p => { ctx.fillStyle="#f8fafc"; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill(); ctx.strokeStyle="#cbd5e1"; ctx.lineWidth=3; ctx.stroke(); ctx.fillStyle="#64748b"; ctx.font="bold 20px Kanit"; ctx.textAlign="center"; ctx.fillText("กองเอกสาร", p.x, p.y+8); });
+
+    ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+
+    // ไอเทมเรืองแสง
     items.forEach(it => { 
         ctx.save(); if(it.life<120) ctx.globalAlpha = (it.life%20<10)?0.3:1; 
-        ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(it.x,it.y,20,0,Math.PI*2); ctx.fill(); ctx.strokeStyle="#000"; ctx.stroke(); 
-        ctx.fillStyle="#000"; ctx.font="22px Arial"; ctx.textAlign="center"; ctx.fillText(it.type==='yadom'?'🌿':(it.type==='bomb'?'💣':'☁️'), it.x, it.y+8); ctx.restore(); 
+        ctx.shadowColor = it.type==='yadom'?"#4caf50":(it.type==='bomb'?"#ff5252":"#ffffff");
+        ctx.shadowBlur = 15 + Math.sin(Date.now()/150)*10; // เอฟเฟกต์กระพริบ
+        ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(it.x,it.y,22,0,Math.PI*2); ctx.fill(); 
+        ctx.fillStyle="#000"; ctx.font="24px Arial"; ctx.textAlign="center"; ctx.fillText(it.type==='yadom'?'🌿':(it.type==='bomb'?'💣':'☁️'), it.x, it.y+8); 
+        ctx.restore(); 
     });
 
-    localSplashes.forEach(s => { ctx.fillStyle=s.isP?'#fff':'#0078d4'; ctx.beginPath(); ctx.arc(s.x,s.y,12,0,Math.PI*2); ctx.fill(); });
+    // 🚨 กระสุนน้ำเรืองแสง (Neon Glow)
+    localSplashes.forEach(s => { 
+        ctx.save();
+        ctx.shadowColor = s.isP ? '#ffffff' : '#00d2ff';
+        ctx.shadowBlur = 15;
+        ctx.fillStyle = s.isP ? '#ffffff' : '#00d2ff'; 
+        ctx.beginPath(); ctx.arc(s.x,s.y,12,0,Math.PI*2); ctx.fill(); 
+        ctx.restore();
+    });
 
+    // วาดผู้เล่นอื่น
     players.forEach(p => { 
-        if(p.name !== my.name){ 
-            let d = Math.hypot(p.x-my.x, p.y-my.y); 
-            if(!p.is_hidden || p.hp<=0 || d<150 || p.isTop1) drawAvatar(p.x, p.y, p.name, p.hp, false, p.isTop1); 
-        } 
+        if(p.name !== my.name){ let d = Math.hypot(p.x-my.x, p.y-my.y); if(!p.is_hidden || p.hp<=0 || d<150 || p.isTop1) drawAvatar(p.x, p.y, p.name, p.hp, false, p.isTop1); } 
     });
 
+    // วาดบอส (เรืองแสงสีแดงน่ากลัว)
     bosses.forEach(boss => {
         if (boss.hp <= 0 || boss.deadTimer > 0) return;
-
         ctx.save();
         if (boss.invisible) { if (boss.stunTimer <= 0 && boss.textTimer <= 0) { let phase = Date.now() % 4500; if (phase < 3000) { ctx.globalAlpha = 0; } else { ctx.globalAlpha = 0.15; } } else { ctx.globalAlpha = 0.8; } } else { ctx.globalAlpha = 1; }
         
         if (boss.isSupreme && ctx.globalAlpha > 0) { ctx.beginPath(); ctx.arc(boss.x, boss.y, 350, 0, Math.PI*2); ctx.fillStyle = "rgba(211, 47, 47, 0.05)"; ctx.fill(); ctx.strokeStyle = "rgba(211, 47, 47, 0.4)"; ctx.lineWidth = 2; ctx.setLineDash([10, 10]); ctx.stroke(); ctx.setLineDash([]); }
 
         if (ctx.globalAlpha > 0) {
-            ctx.fillStyle = boss.color; ctx.beginPath(); ctx.arc(boss.x, boss.y, boss.radius, 0, Math.PI*2); ctx.fill(); ctx.strokeStyle = boss.rageTimer > 0 ? "#fff" : "#000"; ctx.lineWidth = boss.rageTimer > 0 ? 5 : 2; ctx.stroke();
-            ctx.fillStyle="#fff"; ctx.strokeStyle="black"; ctx.lineWidth=4; ctx.font="bold 20px Tahoma"; ctx.textAlign="center"; ctx.strokeText(boss.name, boss.x, boss.y-boss.radius-15); ctx.fillText(boss.name, boss.x, boss.y-boss.radius-15);
-            ctx.fillStyle = boss.rageTimer > 0 ? "#ffeb3b" : "white"; ctx.beginPath(); ctx.arc(boss.x-10, boss.y-5, 5, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(boss.x+10, boss.y-5, 5, 0, Math.PI*2); ctx.fill();
-            if (boss.stunTimer > 0) { ctx.fillStyle="#ffeb3b"; ctx.strokeStyle="red"; ctx.lineWidth=3; ctx.font="bold 30px Tahoma"; ctx.strokeText("💢", boss.x, boss.y - boss.radius - 40); ctx.fillText("💢", boss.x, boss.y - boss.radius - 40); }
-            if (boss.textTimer > 0) { ctx.fillStyle="white"; ctx.strokeStyle="black"; ctx.lineWidth=3; ctx.font="bold 16px Tahoma"; ctx.strokeText(boss.text, boss.x, boss.y-boss.radius-45); ctx.fillText(boss.text, boss.x, boss.y-boss.radius-45); }
+            // ออร่าบอส
+            ctx.shadowColor = boss.color;
+            ctx.shadowBlur = boss.rageTimer > 0 ? 30 : 15;
             
-            let barW = boss.radius * 2;
-            ctx.fillStyle = "black"; ctx.fillRect(boss.x - barW/2, boss.y - boss.radius - 35, barW, 8);
-            ctx.fillStyle = boss.hp > (boss.maxHp * 0.3) ? "#4caf50" : "#f44336"; 
-            ctx.fillRect(boss.x - barW/2, boss.y - boss.radius - 35, barW * (boss.hp / boss.maxHp), 8);
-            ctx.strokeStyle = "white"; ctx.lineWidth = 1; ctx.strokeRect(boss.x - barW/2, boss.y - boss.radius - 35, barW, 8);
+            let grad = ctx.createRadialGradient(boss.x, boss.y, boss.radius*0.2, boss.x, boss.y, boss.radius);
+            grad.addColorStop(0, "#ff5252"); grad.addColorStop(1, boss.color);
+            ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(boss.x, boss.y, boss.radius, 0, Math.PI*2); ctx.fill(); 
+            ctx.strokeStyle = boss.rageTimer > 0 ? "#ffeb3b" : "#fff"; ctx.lineWidth = boss.rageTimer > 0 ? 5 : 2; ctx.stroke();
+            
+            ctx.shadowBlur = 0;
+            ctx.fillStyle="#fff"; ctx.font="bold 22px Kanit"; ctx.textAlign="center"; ctx.fillText(boss.name, boss.x, boss.y-boss.radius-20);
+            
+            // ตาบอสเรืองแสง
+            ctx.shadowColor = "#ffeb3b"; ctx.shadowBlur = 10;
+            ctx.fillStyle = boss.rageTimer > 0 ? "#ffeb3b" : "white"; ctx.beginPath(); ctx.arc(boss.x-12, boss.y-5, 6, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(boss.x+12, boss.y-5, 6, 0, Math.PI*2); ctx.fill();
+            ctx.shadowBlur = 0;
+
+            if (boss.stunTimer > 0) { ctx.fillStyle="#ffeb3b"; ctx.strokeStyle="red"; ctx.lineWidth=3; ctx.font="bold 35px Tahoma"; ctx.strokeText("💢", boss.x, boss.y - boss.radius - 45); ctx.fillText("💢", boss.x, boss.y - boss.radius - 45); }
+            if (boss.textTimer > 0) { ctx.fillStyle="white"; ctx.font="bold 18px Kanit"; ctx.fillText(boss.text, boss.x, boss.y-boss.radius-45); }
+            
+            let barW = boss.radius * 2.5;
+            ctx.fillStyle = "rgba(0,0,0,0.8)"; ctx.fillRect(boss.x - barW/2, boss.y - boss.radius - 15, barW, 10);
+            ctx.fillStyle = boss.hp > (boss.maxHp * 0.3) ? "#4caf50" : "#ff5252"; 
+            ctx.fillRect(boss.x - barW/2, boss.y - boss.radius - 15, barW * (boss.hp / boss.maxHp), 10);
+            ctx.strokeStyle = "rgba(255,255,255,0.5)"; ctx.lineWidth = 1; ctx.strokeRect(boss.x - barW/2, boss.y - boss.radius - 15, barW, 10);
         }
         ctx.restore();
     });
 
-    // 🚨 ถ้าเริ่มเกมแล้ว ถึงจะวาดตัวละครของเราลงบนจอ
+    // วาดตัวเราเอง
     if (gameStarted) {
         ctx.globalAlpha = my.is_hidden ? 0.4 : 1;
-        if(my.hp > 0 && !(my.invulTimer>0 && Math.floor(Date.now()/150)%2===0)) { 
-            drawAvatar(my.x, my.y, my.name, my.hp, my.invulTimer>0, my.isTop1); 
-        }
+        if(my.hp > 0 && !(my.invulTimer>0 && Math.floor(Date.now()/150)%2===0)) { drawAvatar(my.x, my.y, my.name, my.hp, my.invulTimer>0, my.isTop1); }
     }
     ctx.globalAlpha = 1; ctx.restore(); 
     
     if (isBlackout) {
         ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); let maxRadius = Math.min(canvas.width, canvas.height) * 0.4; let grad = ctx.createRadialGradient(canvas.width/2, canvas.height/2, maxRadius * 0.5, canvas.width/2, canvas.height/2, maxRadius);
         grad.addColorStop(0, "rgba(0, 0, 0, 0)"); grad.addColorStop(1, "rgba(0, 0, 0, 1)"); ctx.fillStyle = grad; ctx.fillRect(0, 0, canvas.width, canvas.height); 
-        ctx.fillStyle = "#ffeb3b"; ctx.font = "bold 28px Tahoma"; ctx.textAlign = "center"; ctx.strokeStyle = "black"; ctx.lineWidth = 4; ctx.strokeText("⚠️ ไฟดับ!! ระวังหลังให้ดี! ⚠️", canvas.width/2, 100); ctx.fillText("⚠️ ไฟดับ!! ระวังหลังให้ดี! ⚠️", canvas.width/2, 100); ctx.restore();
+        ctx.fillStyle = "#ffeb3b"; ctx.font = "bold 32px Kanit"; ctx.textAlign = "center"; ctx.fillText("⚠️ ไฟดับ!! ระวังหลังให้ดี! ⚠️", canvas.width/2, 100); ctx.restore();
     }
 }
 
+// 🚨 อัปเกรดการวาดตัวละครให้มีมิติ
 function drawAvatar(x, y, name, hp, invul, isTop1) {
     if(hp <= 0) return; ctx.save(); 
     ctx.globalAlpha *= Math.max(0.4, hp/5); 
     
-    if(invul){ ctx.beginPath(); ctx.arc(x,y,30,0,Math.PI*2); ctx.fillStyle="rgba(255,235,59,0.5)"; ctx.fill(); }
+    if(invul){ 
+        ctx.shadowColor = "#ffeb3b"; ctx.shadowBlur = 20;
+        ctx.beginPath(); ctx.arc(x,y,35,0,Math.PI*2); ctx.fillStyle="rgba(255,235,59,0.3)"; ctx.fill(); 
+        ctx.shadowBlur = 0;
+    }
     
-    ctx.fillStyle="#ff5722"; ctx.beginPath(); ctx.arc(x,y,20,0,Math.PI*2); ctx.fill(); ctx.strokeStyle="#fff"; ctx.lineWidth=3; ctx.stroke();
-    ctx.fillStyle="#e91e63"; ctx.font="bold 20px Arial"; ctx.textAlign="center"; ctx.fillText("❤️".repeat(hp), x, y-35);
-    if(invul && name===my.name) { ctx.fillStyle="#ffeb3b"; ctx.font="bold 24px Arial"; ctx.fillText("อมตะ!", x, y-60); }
-    ctx.fillStyle="#fff"; ctx.font="14px Tahoma"; ctx.fillText(name, x, y-85); 
+    // เงาตัวละคร
+    ctx.shadowColor = "rgba(0,0,0,0.5)"; ctx.shadowBlur = 10; ctx.shadowOffsetY = 5;
+    
+    // ตัวละคร
+    let grad = ctx.createRadialGradient(x, y, 5, x, y, 22);
+    grad.addColorStop(0, "#ff8a65"); grad.addColorStop(1, "#e64a19");
+    ctx.fillStyle=grad; ctx.beginPath(); ctx.arc(x,y,22,0,Math.PI*2); ctx.fill(); 
+    ctx.strokeStyle="#fff"; ctx.lineWidth=3; ctx.stroke();
+    
+    ctx.shadowBlur = 0; ctx.shadowOffsetY = 0; // ปิดเงา
+
+    ctx.fillStyle="#e91e63"; ctx.font="18px Arial"; ctx.textAlign="center"; ctx.fillText("❤️".repeat(hp), x, y-35);
+    if(invul && name===my.name) { ctx.fillStyle="#ffeb3b"; ctx.font="bold 20px Kanit"; ctx.fillText("อมตะ!", x, y-60); }
+    ctx.fillStyle="#fff"; ctx.font="16px Kanit"; ctx.fillText(name, x, y-85); 
     
     if(isTop1) {
-        ctx.fillStyle="#ffeb3b"; ctx.font="35px Arial"; ctx.fillText("👑", x, y-105);
-        ctx.beginPath(); ctx.arc(x,y,45,0,Math.PI*2); ctx.strokeStyle="rgba(255,235,59,0.5)"; ctx.lineWidth=6; ctx.stroke();
+        ctx.shadowColor = "#ffeb3b"; ctx.shadowBlur = 20;
+        ctx.fillStyle="#ffeb3b"; ctx.font="40px Arial"; ctx.fillText("👑", x, y-110);
+        ctx.beginPath(); ctx.arc(x,y,50,0,Math.PI*2); ctx.strokeStyle="rgba(255,235,59,0.6)"; ctx.lineWidth=6; ctx.stroke();
     }
     
     ctx.restore();

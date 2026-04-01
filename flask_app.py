@@ -20,12 +20,13 @@ bosses_state = []
 thread = None
 thread_lock = Lock()
 
+# 🚨 เนิฟบอส: ลดเลือดลง 50%, เดินช้าลงนิดนึง, มองเห็นสั้นลง
 bossProfiles = {
-    "พี่ตุ๊": { 'maxHp': 500, 'killScore': 500, 'radius': 40, 'speed': 4.5, 'color': "#d32f2f", 'text': "แจกงานด่วน!!", 'stunTime': 5, 'rageMult': 2.0, 'seeThrough': True, 'vision': 1200, 'canShoot': True, 'invisible': False, 'isSupreme': True }, 
-    "พี่พงษ์": { 'maxHp': 200, 'killScore': 200, 'radius': 30, 'speed': 3.5, 'color': "#1976d2", 'text': "แก้ตรงนี้นิดนึง", 'stunTime': 45, 'rageMult': 1.5, 'seeThrough': True, 'vision': 900, 'canShoot': False, 'invisible': False, 'isSupreme': False }, 
-    "พี่เอ": { 'maxHp': 200, 'killScore': 200, 'radius': 55, 'speed': 3.8, 'color': "#388e3c", 'text': "เอาแป้งไปกิน!", 'stunTime': 0, 'rageMult': 1.5, 'seeThrough': False, 'vision': 700, 'canShoot': True, 'invisible': False, 'isSupreme': False }, 
-    "พี่หนู": { 'maxHp': 200, 'killScore': 200, 'radius': 25, 'speed': 2.6, 'color': "#e91e63", 'text': "แอบอยู่นี่เอง~", 'stunTime': 30, 'rageMult': 1.2, 'seeThrough': False, 'vision': 500, 'canShoot': False, 'invisible': True, 'isSupreme': False }, 
-    "พี่โอ๋": { 'maxHp': 200, 'killScore': 200, 'radius': 30, 'speed': 5.5, 'color': "#f57c00", 'text': "ด่วนๆๆ เอาเดี๋ยวนี้!", 'stunTime': 40, 'rageMult': 1.3, 'seeThrough': False, 'vision': 600, 'canShoot': False, 'invisible': False, 'isSupreme': False } 
+    "พี่ตุ๊": { 'maxHp': 250, 'killScore': 500, 'radius': 40, 'speed': 3.5, 'color': "#d32f2f", 'text': "แจกงานด่วน!!", 'stunTime': 5, 'rageMult': 1.5, 'seeThrough': True, 'vision': 900, 'canShoot': True, 'invisible': False, 'isSupreme': True }, 
+    "พี่พงษ์": { 'maxHp': 100, 'killScore': 200, 'radius': 30, 'speed': 2.8, 'color': "#1976d2", 'text': "แก้ตรงนี้นิดนึง", 'stunTime': 45, 'rageMult': 1.5, 'seeThrough': True, 'vision': 700, 'canShoot': False, 'invisible': False, 'isSupreme': False }, 
+    "พี่เอ": { 'maxHp': 100, 'killScore': 200, 'radius': 55, 'speed': 3.0, 'color': "#388e3c", 'text': "เอาแป้งไปกิน!", 'stunTime': 0, 'rageMult': 1.5, 'seeThrough': False, 'vision': 600, 'canShoot': True, 'invisible': False, 'isSupreme': False }, 
+    "พี่หนู": { 'maxHp': 100, 'killScore': 200, 'radius': 25, 'speed': 2.2, 'color': "#e91e63", 'text': "แอบอยู่นี่เอง~", 'stunTime': 30, 'rageMult': 1.2, 'seeThrough': False, 'vision': 400, 'canShoot': False, 'invisible': True, 'isSupreme': False }, 
+    "พี่โอ๋": { 'maxHp': 100, 'killScore': 200, 'radius': 30, 'speed': 4.0, 'color': "#f57c00", 'text': "ด่วนๆๆ เอาเดี๋ยวนี้!", 'stunTime': 40, 'rageMult': 1.3, 'seeThrough': False, 'vision': 500, 'canShoot': False, 'invisible': False, 'isSupreme': False } 
 }
 
 def create_global_bosses():
@@ -101,7 +102,7 @@ def game_loop():
                                 for i in range(12):
                                     a = (math.pi / 6) * i
                                     shots_state.append({'owner': boss['name'], 'x': boss['x'], 'y': boss['y'], 'tx': boss['x'] + math.cos(a)*700, 'ty': boss['y'] + math.sin(a)*700, 't': time.time()})
-                                boss['shootTimer'] = 80; boss['rageTimer'] = 0 
+                                boss['shootTimer'] = 140; boss['rageTimer'] = 0 # 🚨 เนิฟให้พี่ยิงช้าลง
                         elif prof['canShoot']:
                             boss['shootTimer'] -= frames
                             if boss['shootTimer'] <= 0 and minDist < 700:
@@ -110,10 +111,10 @@ def game_loop():
                                     for offset in [-0.3, 0, 0.3]:
                                         a = boss['angle'] + offset
                                         shots_state.append({'owner': boss['name'], 'x': boss['x'], 'y': boss['y'], 'tx': boss['x'] + math.cos(a)*600 + 100000, 'ty': boss['y'] + math.sin(a)*600, 't': time.time()})
-                                    boss['shootTimer'] = 45
+                                    boss['shootTimer'] = 90 # 🚨 ยิงช้าลง
                                 else:
                                     shots_state.append({'owner': boss['name'], 'x': boss['x'], 'y': boss['y'], 'tx': targetX, 'ty': targetY, 't': time.time()})
-                                    boss['shootTimer'] = 80
+                                    boss['shootTimer'] = 120 # 🚨 ยิงช้าลง
                     else:
                         if random.random() < (0.02 * frames): boss['angle'] += random.uniform(-1.0, 1.0)
                         currentBossSpeed *= 0.6
@@ -159,7 +160,6 @@ def handle_player_update(data):
     name = data.get('name')
     if not name: return
     
-    # 🚨 ระบบกู้คะแนน: ถ้าเซิร์ฟเวอร์เพิ่งตื่น (ยังไม่มีชื่อคนนี้) ให้รับคะแนนจากเครื่องที่ส่งมา!
     if name in players_state:
         current_score = players_state[name]['score']
     else:

@@ -10,28 +10,28 @@
         
         #start-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); z-index: 2000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
         .start-box { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(15px); padding: 40px; border-radius: 20px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.5); max-width: 90%; width: 380px; color: white; }
-        .start-box h1 { color: #00d2ff; margin-top: 0; font-size: 32px; text-shadow: 0 0 10px rgba(0, 210, 255, 0.5); letter-spacing: 1px;}
+        .start-box h1 { color: #f8fafc; margin-top: 0; font-size: 32px; text-shadow: 0 0 10px rgba(255, 255, 255, 0.5); letter-spacing: 1px;}
         .start-box p { color: #ccc; margin-bottom: 25px; font-size: 16px; }
-        .start-box input { width: 85%; padding: 15px; font-size: 18px; font-family: 'Kanit'; background: rgba(0,0,0,0.5); color: #fff; border: 2px solid #00d2ff; border-radius: 10px; margin-bottom: 25px; text-align: center; outline: none; transition: 0.3s;}
-        .start-box input:focus { box-shadow: 0 0 15px rgba(0, 210, 255, 0.5); }
-        .start-box button { background: linear-gradient(45deg, #00d2ff, #3a7bd5); color: #fff; border: none; padding: 15px 30px; font-size: 20px; font-weight: bold; border-radius: 10px; cursor: pointer; transition: 0.2s; width: 95%; font-family: 'Kanit'; box-shadow: 0 5px 15px rgba(0, 210, 255, 0.4);}
+        .start-box input { width: 85%; padding: 15px; font-size: 18px; font-family: 'Kanit'; background: rgba(0,0,0,0.5); color: #fff; border: 2px solid #cbd5e1; border-radius: 10px; margin-bottom: 25px; text-align: center; outline: none; transition: 0.3s;}
+        .start-box input:focus { box-shadow: 0 0 15px rgba(255, 255, 255, 0.5); }
+        .start-box button { background: linear-gradient(45deg, #e2e8f0, #94a3b8); color: #1e293b; border: none; padding: 15px 30px; font-size: 20px; font-weight: bold; border-radius: 10px; cursor: pointer; transition: 0.2s; width: 95%; font-family: 'Kanit'; box-shadow: 0 5px 15px rgba(255, 255, 255, 0.3);}
         .start-box button:active { transform: scale(0.95); }
 
-        #ui { position: absolute; top: 15px; left: 15px; color: #fff; background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); border-left: 5px solid #00d2ff; z-index: 10; font-size: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); pointer-events: none; display: none;}
+        #ui { position: absolute; top: 15px; left: 15px; color: #fff; background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); border-left: 5px solid #cbd5e1; z-index: 10; font-size: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); pointer-events: none; display: none;}
         #ammo-bar { width: 160px; height: 14px; background: rgba(0,0,0,0.5); border-radius: 7px; overflow: hidden; margin-top: 8px; border: 1px solid rgba(255,255,255,0.2); }
-        #ammo-fill { width: 100%; height: 100%; background: linear-gradient(90deg, #00d2ff, #3a7bd5); transition: width 0.1s; box-shadow: 0 0 10px rgba(0, 210, 255, 0.8);}
+        #ammo-fill { width: 100%; height: 100%; background: linear-gradient(90deg, #f8fafc, #94a3b8); transition: width 0.1s; box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);}
         
         #leaderboard { position: absolute; top: 15px; right: 15px; width: 160px; color: #fff; background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); z-index: 10; font-size: 14px; pointer-events: none; display: none; box-shadow: 0 8px 32px rgba(0,0,0,0.3);}
         .lb-row { display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding: 5px 0; }
         
         #damage-flash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle, rgba(233, 30, 99, 0) 50%, rgba(233, 30, 99, 0.6) 100%); pointer-events: none; opacity: 0; transition: opacity 0.1s; z-index: 998; }
-        #blind-flash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 255, 255, 0.98); pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 999; display: flex; justify-content: center; align-items: center; flex-direction: column; }
+        #blind-flash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 235, 59, 0.95); pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 999; display: flex; justify-content: center; align-items: center; flex-direction: column; }
         #boss-flash { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(211, 47, 47, 0.95); pointer-events: none; opacity: 0; transition: opacity 0.2s; z-index: 1000; display: flex; justify-content: center; align-items: center; flex-direction: column; backdrop-filter: blur(5px);}
 
         #kill-flash { position: fixed; top: 20%; left: 50%; transform: translateX(-50%); font-size: 26px; font-weight: bold; text-shadow: 0 4px 10px rgba(0,0,0,0.8); z-index: 1001; opacity: 0; transition: opacity 0.3s, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); pointer-events: none; background: linear-gradient(90deg, rgba(0,0,0,0), rgba(0,0,0,0.8), rgba(0,0,0,0)); padding: 15px 40px; text-align: center; width: 100%;}
 
         #joy-move-zone { position: absolute; bottom: 40px; left: 40px; width: 130px; height: 130px; background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.1); border-radius: 50%; z-index: 20; touch-action: none; display: none; backdrop-filter: blur(5px);}
-        #joy-move-knob { position: absolute; top: 40px; left: 40px; width: 50px; height: 50px; border-radius: 50%; pointer-events: none; background: radial-gradient(circle, rgba(0, 210, 255, 0.8), rgba(58, 123, 213, 0.8)); box-shadow: 0 0 15px rgba(0, 210, 255, 0.5);}
+        #joy-move-knob { position: absolute; top: 40px; left: 40px; width: 50px; height: 50px; border-radius: 50%; pointer-events: none; background: radial-gradient(circle, rgba(255, 255, 255, 0.8), rgba(148, 163, 184, 0.8)); box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);}
         
         canvas { display: block; width: 100vw; height: 100vh; }
         @media (max-width: 768px) { .hide-mobile { display: none !important; } }
@@ -41,15 +41,15 @@
 
 <div id="start-screen">
     <div class="start-box">
-        <h1>💦 DCO THE SURVIVAL</h1>
-        <p>สงครามสาดน้ำแห่งออฟฟิศ เริ่มขึ้นแล้ว!</p>
+        <h1>📄 DCO PAPER WAR</h1>
+        <p>สงครามกระดาษแห่งออฟฟิศ เริ่มขึ้นแล้ว!</p>
         <input type="text" id="startNameInput" placeholder="พิมพ์ชื่อพนักงาน..." maxlength="12"><br>
-        <button id="startBtn">ลงสนามสาดน้ำ! 🔫</button>
+        <button id="startBtn">ลงสนามปะทะ! 📄</button>
     </div>
 </div>
 
 <div id="damage-flash"></div>
-<div id="blind-flash"><h1 style="color:#e91e63; font-size: 40px;">โดนปะแป้งเต็มตา!</h1><p style="color:#333; font-size: 20px;">มองไม่เห็น 3 วินาที...</p></div>
+<div id="blind-flash"><h1 style="color:#e91e63; font-size: 40px;">โดนโพสต์อิทแปะหน้า!</h1><p style="color:#333; font-size: 20px;">มองไม่เห็น 3 วินาที...</p></div>
 <div id="boss-flash">
     <h1 id="boss-flash-title" style="color:#ffeb3b; font-size: 45px; text-shadow: 0 0 20px rgba(255,235,59,0.8);">โดนตามงานด่วน!!</h1>
     <p id="boss-flash-desc" style="color:white; font-size:24px;">💀 เตรียมตัวเกิดใหม่...</p>
@@ -57,15 +57,15 @@
 <div id="kill-flash"></div>
 
 <div id="ui">
-    <b style="font-size: 16px;">📎 พนักงาน: <span id="pNameDisplay" style="color:#00d2ff; text-shadow: 0 0 5px rgba(0,210,255,0.5);"></span></b><br>
+    <b style="font-size: 16px;">📎 พนักงาน: <span id="pNameDisplay" style="color:#f8fafc; text-shadow: 0 0 5px rgba(255,255,255,0.5);"></span></b><br>
     <div style="margin-top: 5px;">พลังใจ: <span id="hp-text">❤️❤️❤️❤️❤️</span></div>
-    <div style="margin-top: 5px;">กระสุนน้ำ: <span id="ammo-text" style="color:#00d2ff; font-weight:bold;">15 / 15</span></div>
+    <div style="margin-top: 5px;">กระดาษขยำ: <span id="ammo-text" style="color:#f8fafc; font-weight:bold;">15 / 15</span></div>
     <div id="ammo-bar"><div id="ammo-fill"></div></div>
     <div id="buff-text" style="margin-top:8px; font-weight:bold; color:#ffeb3b; height: 18px; text-shadow: 0 0 5px rgba(255,235,59,0.5);"></div>
 </div>
 
 <div id="leaderboard" class="hide-mobile">
-    <div style="text-align:center; font-weight:bold; border-bottom:2px solid #00d2ff; margin-bottom:10px; padding-bottom: 5px; color:#00d2ff; text-shadow: 0 0 5px rgba(0,210,255,0.5);">🏆 TOP STAFF 🏆</div>
+    <div style="text-align:center; font-weight:bold; border-bottom:2px solid #cbd5e1; margin-bottom:10px; padding-bottom: 5px; color:#f8fafc; text-shadow: 0 0 5px rgba(255,255,255,0.5);">🏆 TOP STAFF 🏆</div>
     <div id="lb-content"></div>
 </div>
 
@@ -179,13 +179,12 @@ function takeDamage(shooter, isP) {
     my.hp--; updateUI();
     const f = document.getElementById('damage-flash'); f.style.opacity = 1; setTimeout(()=>f.style.opacity=0, 150);
     
-    // 🚨 บัฟพนักงาน: โดนยิงแล้วอมตะ 1.5 วินาที จะได้ไม่โดนยิงซ้ำรัวๆ
     my.invulTimer = 90; 
     
     if(my.hp <= 0) {
         socket.emit('player_update', my); 
         if (!shooter.startsWith("🕴️")) { socket.emit('player_killed', {killer: shooter, victim: my.name}); }
-        document.getElementById('boss-flash-title').innerText = "💦 โดนสาดร่วงซะแล้ว..."; document.getElementById('boss-flash-title').style.color = "#ffeb3b";
+        document.getElementById('boss-flash-title').innerText = "📄 โดนปาร่วงซะแล้ว..."; document.getElementById('boss-flash-title').style.color = "#ffeb3b";
         document.getElementById('boss-flash').style.opacity=1;
         setTimeout(() => {
             document.getElementById('boss-flash').style.opacity=0; 
@@ -199,7 +198,7 @@ function updateUI() {
     document.getElementById('ammo-text').innerText = `${Math.floor(my.ammo)} / ${my.maxAmmo}`;
     document.getElementById('ammo-fill').style.width = (my.ammo/my.maxAmmo*100) + "%";
     document.getElementById('hp-text').innerText = "❤️".repeat(Math.max(0, my.hp)) + "🤍".repeat(Math.max(0, 5-my.hp));
-    let b = ""; if(my.speedTimer > 0) b += "🌿 ยาดมออกฤทธิ์! "; if(my.powderAmmo > 0) b += `☁️ แป้ง (${my.powderAmmo}) `; if(my.bombAmmo > 0) b += `💣 ระเบิดน้ำ (${my.bombAmmo})`; document.getElementById('buff-text').innerText = b;
+    let b = ""; if(my.speedTimer > 0) b += "🌿 ยาดมออกฤทธิ์! "; if(my.powderAmmo > 0) b += `📝 โพสต์อิท (${my.powderAmmo}) `; if(my.bombAmmo > 0) b += `📚 พายุกระดาษ (${my.bombAmmo})`; document.getElementById('buff-text').innerText = b;
 }
 
 socket.on('kill_announcement', (data) => {
@@ -210,7 +209,7 @@ socket.on('kill_announcement', (data) => {
     else if(data.killer === my.name) {
         kf.innerHTML = `🔥 คุณจัดการ <b>${data.victim}</b> ได้สำเร็จ!<br><span style="color:#ffeb3b; font-size:18px;">+ โบนัสคะแนน!</span>`;
     } else {
-        kf.innerHTML = `💀 <b style="color:#00d2ff">${data.killer}</b> พิชิต <b style="color:#ff5252">${data.victim}</b> ร่วง!`;
+        kf.innerHTML = `💀 <b style="color:#cbd5e1">${data.killer}</b> ปากระดาษใส่ <b style="color:#ff5252">${data.victim}</b> ร่วง!`;
     }
     kf.style.opacity = 1; kf.style.transform = "translateX(-50%) translateY(40px) scale(1.1)";
     setTimeout(() => { kf.style.opacity = 0; kf.style.transform = "translateX(-50%) translateY(0px) scale(1)"; }, 3500);
@@ -237,7 +236,7 @@ socket.on('world_update', (data) => {
     });
     bosses = bosses.filter(lb => data.bosses.some(sb => sb.name === lb.name));
 
-    let html = ""; data.players.slice(0,5).forEach((p,i) => html += `<div class="lb-row"><span style="color:${i===0?'#ffeb3b':'white'};">${i===0?'👑':''}${i+1}. ${p.name}</span><span style="font-weight:bold; color:#00d2ff;">${p.score}</span></div>`);
+    let html = ""; data.players.slice(0,5).forEach((p,i) => html += `<div class="lb-row"><span style="color:${i===0?'#ffeb3b':'white'};">${i===0?'👑':''}${i+1}. ${p.name}</span><span style="font-weight:bold; color:#cbd5e1;">${p.score}</span></div>`);
     document.getElementById('lb-content').innerHTML = html;
     
     data.shots.forEach(s => {
@@ -256,7 +255,7 @@ function update() {
 
     if (gameStarted) {
         if (my.hp > 0) {
-            let s = 6.5 * dt; // 🚨 บัฟให้พนักงานวิ่งเร็วขึ้นนิดนึง! (จาก 5.5 เป็น 6.5)
+            let s = 6.5 * dt; 
             if(my.speedTimer > 0){ s = 10 * dt; my.speedTimer -= dt; if(my.speedTimer<=0) updateUI(); }
             if(my.invulTimer > 0) my.invulTimer -= dt;
             if(my.blindTimer > 0) my.blindTimer -= dt; 
@@ -366,16 +365,16 @@ function draw() {
     ctx.shadowBlur = 10; ctx.shadowOffsetY = 5;
     waterCoolers.forEach(c => { 
         let grad = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, c.r);
-        grad.addColorStop(0, "#00d2ff"); grad.addColorStop(1, "#3a7bd5");
+        grad.addColorStop(0, "#fbbf24"); grad.addColorStop(1, "#b45309"); // 🚨 สีลังกระดาษน้ำตาลทอง
         ctx.fillStyle=grad; ctx.beginPath(); ctx.arc(c.x,c.y,c.r,0,Math.PI*2); ctx.fill(); 
-        ctx.fillStyle="#fff"; ctx.font="bold 22px Kanit"; ctx.textAlign="center"; ctx.fillText("ตู้กดน้ำ 💧", c.x, c.y+8); 
+        ctx.fillStyle="#fff"; ctx.font="bold 22px Kanit"; ctx.textAlign="center"; ctx.fillText("ลังกระดาษ 📦", c.x, c.y+8); 
     });
     
     partitions.forEach(p => { 
         let grad = ctx.createLinearGradient(p.x, p.y, p.x+p.w, p.y+p.h);
         grad.addColorStop(0, "#334155"); grad.addColorStop(1, "#1e293b");
         ctx.fillStyle=grad; ctx.fillRect(p.x,p.y,p.w,p.h); 
-        ctx.strokeStyle="#00d2ff"; ctx.lineWidth=2; ctx.strokeRect(p.x,p.y,p.w,p.h);
+        ctx.strokeStyle="#cbd5e1"; ctx.lineWidth=2; ctx.strokeRect(p.x,p.y,p.w,p.h);
     });
 
     paperStacks.forEach(p => { ctx.fillStyle="#f8fafc"; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill(); ctx.strokeStyle="#cbd5e1"; ctx.lineWidth=3; ctx.stroke(); ctx.fillStyle="#64748b"; ctx.font="bold 20px Kanit"; ctx.textAlign="center"; ctx.fillText("กองเอกสาร", p.x, p.y+8); });
@@ -384,16 +383,21 @@ function draw() {
 
     items.forEach(it => { 
         ctx.save(); if(it.life<120) ctx.globalAlpha = (it.life%20<10)?0.3:1; 
-        ctx.shadowColor = it.type==='yadom'?"#4caf50":(it.type==='bomb'?"#ff5252":"#ffffff");
+        ctx.shadowColor = it.type==='yadom'?"#4caf50":(it.type==='bomb'?"#cbd5e1":"#ffeb3b");
         ctx.shadowBlur = 15 + Math.sin(Date.now()/150)*10;
         ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(it.x,it.y,22,0,Math.PI*2); ctx.fill(); 
-        ctx.fillStyle="#000"; ctx.font="24px Arial"; ctx.textAlign="center"; ctx.fillText(it.type==='yadom'?'🌿':(it.type==='bomb'?'💣':'☁️'), it.x, it.y+8); 
+        ctx.fillStyle="#000"; ctx.font="24px Arial"; ctx.textAlign="center"; ctx.fillText(it.type==='yadom'?'🌿':(it.type==='bomb'?'📚':'📝'), it.x, it.y+8); 
         ctx.restore(); 
     });
 
+    // 🚨 กระดาษและโพสต์อิท!
     localSplashes.forEach(s => { 
-        ctx.save(); ctx.shadowColor = s.isP ? '#ffffff' : '#00d2ff'; ctx.shadowBlur = 15;
-        ctx.fillStyle = s.isP ? '#ffffff' : '#00d2ff'; ctx.beginPath(); ctx.arc(s.x,s.y,12,0,Math.PI*2); ctx.fill(); ctx.restore();
+        ctx.save(); 
+        ctx.shadowColor = s.isP ? '#ffeb3b' : '#ffffff'; ctx.shadowBlur = 10;
+        ctx.fillStyle = s.isP ? '#ffeb3b' : '#ffffff'; 
+        ctx.beginPath(); ctx.arc(s.x,s.y,10,0,Math.PI*2); ctx.fill(); 
+        ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 2; ctx.stroke();
+        ctx.restore();
     });
 
     players.forEach(p => { 
@@ -404,12 +408,11 @@ function draw() {
         if (boss.hp <= 0 || boss.deadTimer > 0) return;
         ctx.save();
         
-        // 🚨 ปรับความโปร่งใสของพี่หนู ให้ยังเห็นเป็นเงาลางๆ 8% 
         if (boss.invisible) { 
             if (boss.stunTimer <= 0 && boss.textTimer <= 0) { 
                 let phase = Date.now() % 4500; 
-                if (phase < 3000) { ctx.globalAlpha = 0.08; } // เห็นลางๆ 8%
-                else { ctx.globalAlpha = 0.25; } // โผล่มานิดนึง 25%
+                if (phase < 3000) { ctx.globalAlpha = 0.08; } 
+                else { ctx.globalAlpha = 0.25; } 
             } else { 
                 ctx.globalAlpha = 0.8; 
             } 

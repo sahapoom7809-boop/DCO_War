@@ -8,7 +8,6 @@
         @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@400;700&display=swap');
         html, body { width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden; background: #1a1a2e; font-family: 'Kanit', sans-serif; touch-action: none; }
         
-        /* 🚨 อัปเกรดหน้าเริ่มเกมให้หรูหรา */
         #start-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); z-index: 2000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
         .start-box { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(15px); padding: 40px; border-radius: 20px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.5); max-width: 90%; width: 380px; color: white; }
         .start-box h1 { color: #00d2ff; margin-top: 0; font-size: 32px; text-shadow: 0 0 10px rgba(0, 210, 255, 0.5); letter-spacing: 1px;}
@@ -18,7 +17,6 @@
         .start-box button { background: linear-gradient(45deg, #00d2ff, #3a7bd5); color: #fff; border: none; padding: 15px 30px; font-size: 20px; font-weight: bold; border-radius: 10px; cursor: pointer; transition: 0.2s; width: 95%; font-family: 'Kanit'; box-shadow: 0 5px 15px rgba(0, 210, 255, 0.4);}
         .start-box button:active { transform: scale(0.95); }
 
-        /* 🚨 อัปเกรด UI ให้เป็นแบบกระจกโปร่งแสง (Glassmorphism) */
         #ui { position: absolute; top: 15px; left: 15px; color: #fff; background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); border-left: 5px solid #00d2ff; z-index: 10; font-size: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); pointer-events: none; display: none;}
         #ammo-bar { width: 160px; height: 14px; background: rgba(0,0,0,0.5); border-radius: 7px; overflow: hidden; margin-top: 8px; border: 1px solid rgba(255,255,255,0.2); }
         #ammo-fill { width: 100%; height: 100%; background: linear-gradient(90deg, #00d2ff, #3a7bd5); transition: width 0.1s; box-shadow: 0 0 10px rgba(0, 210, 255, 0.8);}
@@ -88,7 +86,17 @@ function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = wind
 window.addEventListener('resize', resizeCanvas); resizeCanvas(); 
 
 let gameStarted = false;
-let my = { name: "", x: WORLD.w/2, y: WORLD.h/2, hp: 5, ammo: 15, maxAmmo: 15, radius: 20, is_hidden: false, facingAngle: 0, vx: 0, vy: 0, speedTimer: 0, powderAmmo: 0, bombAmmo: 0, blindTimer: 0, invulTimer: 180, isTop1: false };
+
+const savedName = localStorage.getItem('dco_playerName') || "";
+const savedScore = parseInt(localStorage.getItem('dco_playerScore') || "0");
+
+if (savedName) {
+    document.getElementById('startNameInput').value = savedName;
+} else {
+    document.getElementById('startNameInput').value = "Staff_" + Math.floor(Math.random() * 1000);
+}
+
+let my = { name: "", x: WORLD.w/2, y: WORLD.h/2, hp: 5, ammo: 15, maxAmmo: 15, radius: 20, is_hidden: false, facingAngle: 0, vx: 0, vy: 0, speedTimer: 0, powderAmmo: 0, bombAmmo: 0, blindTimer: 0, invulTimer: 180, isTop1: false, saved_score: savedScore };
 
 let bosses = []; let players = []; let localSplashes = []; let processedShots = new Set(); let items = [];
 
@@ -102,14 +110,31 @@ const partitions = [
 const copiers = [{x:2500,y:1100,r:150}, {x:1500,y:2500,r:150}, {x:800,y:1500,r:120}]; 
 const wetFloors = [{x:2000,y:1750,r:320}, {x:1000,y:2000,r:200}, {x:3000,y:1500,r:200}]; 
 
+// 🚨 ระบบป้องกันสุ่มเกิดในกำแพง! 
+function getSafeSpawn() {
+    for(let i=0; i<50; i++) {
+        let px = Math.random() * (WORLD.w - 400) + 200;
+        let py = Math.random() * (WORLD.h - 400) + 200;
+        // เช็คว่าพิกัดที่สุ่มได้ ซ้อนทับกับกำแพง (บวกระยะห่างตัวละคร) หรือไม่
+        let inWall = partitions.some(p => px + 30 > p.x && px - 30 < p.x + p.w && py + 30 > p.y && py - 30 < p.y + p.h);
+        if(!inWall) return {x: px, y: py}; // ถ้าปลอดภัยให้ใช้จุดนี้
+    }
+    return {x: 1000, y: 1000}; // จุดสำรองกรณีฉุกเฉิน
+}
+
 document.getElementById('startBtn').addEventListener('click', () => {
     let inputName = document.getElementById('startNameInput').value.trim();
     if (!inputName) inputName = "Staff_" + Math.floor(Math.random() * 1000);
     my.name = inputName; document.getElementById('pNameDisplay').innerText = my.name;
+    
+    localStorage.setItem('dco_playerName', my.name);
+    
     document.getElementById('start-screen').style.display = 'none';
     document.getElementById('ui').style.display = 'block'; document.getElementById('leaderboard').style.display = 'block';
     if (isMobile) document.getElementById('joy-move-zone').style.display = 'block';
-    my.x = Math.random() * (WORLD.w - 400) + 200; my.y = Math.random() * (WORLD.h - 400) + 200; my.hp = 5; my.invulTimer = 180;
+    
+    let spawn = getSafeSpawn(); // 🚨 ใช้ระบบสุ่มจุดเกิดแบบปลอดภัย
+    my.x = spawn.x; my.y = spawn.y; my.hp = 5; my.invulTimer = 180;
     gameStarted = true;
 });
 
@@ -162,7 +187,9 @@ function takeDamage(shooter, isP) {
         document.getElementById('boss-flash-title').innerText = "💦 โดนสาดร่วงซะแล้ว..."; document.getElementById('boss-flash-title').style.color = "#ffeb3b";
         document.getElementById('boss-flash').style.opacity=1;
         setTimeout(() => {
-            document.getElementById('boss-flash').style.opacity=0; my.x = Math.random() * (WORLD.w - 400) + 200; my.y = Math.random() * (WORLD.h - 400) + 200; my.hp=5; my.ammo=0; my.vx=0; my.vy=0; my.speedTimer=0; my.powderAmmo=0; my.bombAmmo=0; my.invulTimer=180; my.blindTimer=0; updateUI();
+            document.getElementById('boss-flash').style.opacity=0; 
+            let spawn = getSafeSpawn(); // 🚨 ใช้จุดเกิดแบบปลอดภัย
+            my.x = spawn.x; my.y = spawn.y; my.hp=5; my.ammo=0; my.vx=0; my.vy=0; my.speedTimer=0; my.powderAmmo=0; my.bombAmmo=0; my.invulTimer=180; my.blindTimer=0; updateUI();
         }, 1500);
     }
 }
@@ -199,6 +226,9 @@ socket.on('world_update', (data) => {
     });
     players = players.filter(lp => data.players.some(sp => sp.name === lp.name));
     
+    let me = data.players.find(p => p.name === my.name);
+    if (me) { localStorage.setItem('dco_playerScore', me.score); }
+
     data.bosses.forEach(sb => {
         let lb = bosses.find(b => b.name === sb.name);
         if (lb) { lb.tx = sb.x; lb.ty = sb.y; lb.text = sb.text; lb.textTimer = sb.textTimer; lb.stunTimer = sb.stunTimer; lb.rageTimer = sb.rageTimer; lb.invisible = sb.invisible; lb.hp = sb.hp; lb.maxHp = sb.maxHp; lb.deadTimer = sb.deadTimer;
@@ -215,12 +245,23 @@ socket.on('world_update', (data) => {
     });
 });
 
+let lastFrameTime = performance.now(); // 🚨 ตัวแปรจับเวลาสำหรับแก้คนวิ่งช้า
+
 function update() {
+    // 🚨 คำนวณ Delta Time เพื่อให้ทุกจอมือถือวิ่งเร็วเท่ากัน
+    let nowTime = performance.now();
+    let dt = (nowTime - lastFrameTime) / 16.666;
+    lastFrameTime = nowTime;
+    if (dt > 3) dt = 3; // ป้องกันบั๊กเวลาสลับแอปไปมา
+
     if (gameStarted) {
         if (my.hp > 0) {
-            let s = 5.5; if(my.speedTimer > 0){ s = 9; my.speedTimer--; if(my.speedTimer===0) updateUI(); }
-            if(my.invulTimer > 0) my.invulTimer--;
-            if (my.blindTimer > 0) my.blindTimer--; document.getElementById('blind-flash').style.opacity = my.blindTimer > 0 ? 0.98 : 0;
+            let s = 5.5 * dt; // 🚨 ปรับความเร็วตาม dt
+            if(my.speedTimer > 0){ s = 9 * dt; my.speedTimer -= dt; if(my.speedTimer<=0) updateUI(); }
+            if(my.invulTimer > 0) my.invulTimer -= dt;
+            if(my.blindTimer > 0) my.blindTimer -= dt; 
+            document.getElementById('blind-flash').style.opacity = my.blindTimer > 0 ? 0.98 : 0;
+            
             if(copiers.some(m => Math.hypot(my.x-m.x, my.y-m.y) < m.r)) s *= 0.4;
             let ice = wetFloors.some(f => Math.hypot(my.x-f.x, my.y-f.y) < f.r);
             
@@ -237,9 +278,9 @@ function update() {
             if(!hw) my.x = Math.max(20, Math.min(WORLD.w-20, nx)); if(!hh) my.y = Math.max(20, Math.min(WORLD.h-20, ny));
 
             my.is_hidden = paperStacks.some(p => Math.hypot(my.x-p.x, my.y-p.y) < p.r);
-            waterCoolers.forEach(c => { if(Math.hypot(my.x-c.x, my.y-c.y) < c.r) { if (my.ammo < my.maxAmmo) my.ammo = Math.min(my.maxAmmo, my.ammo+0.4); updateUI(); } });
+            waterCoolers.forEach(c => { if(Math.hypot(my.x-c.x, my.y-c.y) < c.r) { if (my.ammo < my.maxAmmo) my.ammo = Math.min(my.maxAmmo, my.ammo+(0.4*dt)); updateUI(); } });
 
-            if(Math.random() < 0.02 && items.length < 15){
+            if(Math.random() < (0.02 * dt) && items.length < 15){
                 let ix = Math.random()*(WORLD.w-200)+100, iy = Math.random()*(WORLD.h-200)+100;
                 if(!partitions.some(p => ix > p.x && ix < p.x+p.w && iy > p.y && iy < p.y+p.h)) { 
                     let rnd = Math.random(); let iType = rnd > 0.85 ? 'bomb' : (rnd > 0.4 ? 'yadom' : 'powder');
@@ -247,7 +288,7 @@ function update() {
                 }
             }
             for(let i=items.length-1; i>=0; i--){
-                items[i].life--; if(items[i].life<=0){ items.splice(i,1); continue; }
+                items[i].life -= dt; if(items[i].life<=0){ items.splice(i,1); continue; }
                 if(Math.hypot(my.x-items[i].x, my.y-items[i].y) < 45){
                     if(items[i].type==='yadom'){ my.speedTimer=300; my.hp=Math.min(5,my.hp+1); } else if (items[i].type==='bomb'){ my.bombAmmo += 1; } else { my.powderAmmo+=3; }
                     updateUI(); items.splice(i,1);
@@ -268,7 +309,11 @@ function update() {
                 my.hp = 0; my.ammo = 0; my.blindTimer = 0; updateUI(); socket.emit('player_update', my);
                 document.getElementById('boss-flash-title').innerText = boss.name + " จับได้!!"; document.getElementById('boss-flash-title').style.color = "#ff5252";
                 document.getElementById('boss-flash').style.opacity=1;
-                setTimeout(() => { document.getElementById('boss-flash').style.opacity=0; my.x = Math.random() * (WORLD.w - 400) + 200; my.y = Math.random() * (WORLD.h - 400) + 200; my.hp = 5; my.ammo = 0; my.vx = 0; my.vy = 0; my.speedTimer = 0; my.powderAmmo = 0; my.bombAmmo = 0; my.invulTimer = 180; updateUI(); }, 2500);
+                setTimeout(() => { 
+                    document.getElementById('boss-flash').style.opacity=0; 
+                    let spawn = getSafeSpawn(); // 🚨 ใช้จุดเกิดแบบปลอดภัย
+                    my.x = spawn.x; my.y = spawn.y; my.hp = 5; my.ammo = 0; my.vx = 0; my.vy = 0; my.speedTimer = 0; my.powderAmmo = 0; my.bombAmmo = 0; my.invulTimer = 180; updateUI(); 
+                }, 2500);
             }
             if (boss.isSupreme) {
                 let distToMe = Math.hypot(my.x - boss.x, my.y - boss.y);
@@ -282,7 +327,7 @@ function update() {
     });
 
     for(let i=localSplashes.length-1; i>=0; i--){
-        let s = localSplashes[i]; s.x+=s.vx; s.y+=s.vy; s.life--;
+        let s = localSplashes[i]; s.x+=s.vx*dt; s.y+=s.vy*dt; s.life-=dt;
         let hitW = partitions.some(p => s.x>p.x && s.x<p.x+p.w && s.y>p.y && s.y<p.y+p.h);
         let hitS = false;
         if (gameStarted && s.owner === my.name) {
@@ -295,30 +340,27 @@ function update() {
     draw(); requestAnimationFrame(update);
 }
 
-// 🚨 ฟังก์ชันวาดภาพที่มีการใส่แสงและเงาให้สวยขึ้น
 function draw() {
-    ctx.fillStyle = "#111827"; ctx.fillRect(0, 0, canvas.width, canvas.height); // สีพื้นหลังออฟฟิศโทนเข้ม
+    ctx.fillStyle = "#111827"; ctx.fillRect(0, 0, canvas.width, canvas.height); 
     ctx.save(); 
     let now = Math.floor(Date.now() / 1000); let isBlackout = (now % 60) < 10;
     ctx.scale(cameraScale, cameraScale); ctx.translate(-(my.x - (canvas.width/2)/cameraScale), -(my.y - (canvas.height/2)/cameraScale));
     
-    // วาดพื้นลายตารางหมากรุกสวยๆ
     ctx.fillStyle = "#1e293b"; ctx.fillRect(0,0,WORLD.w,WORLD.h);
     ctx.strokeStyle = "rgba(255,255,255,0.05)"; ctx.lineWidth = 2;
     for(let i=0; i<=WORLD.w; i+=100){ ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,WORLD.h); ctx.stroke(); }
     for(let i=0; i<=WORLD.h; i+=100){ ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(WORLD.w,i); ctx.stroke(); }
 
-    // แสงเงาของสิ่งของ (Drop Shadow)
     ctx.shadowColor = "rgba(0,0,0,0.5)"; ctx.shadowBlur = 15; ctx.shadowOffsetY = 10;
 
     copiers.forEach(m => { 
         let grad = ctx.createLinearGradient(m.x-m.r, m.y-m.r, m.x+m.r, m.y+m.r);
         grad.addColorStop(0, "#475569"); grad.addColorStop(1, "#1e293b");
         ctx.fillStyle=grad; ctx.beginPath(); ctx.arc(m.x,m.y,m.r,0,Math.PI*2); ctx.fill(); 
-        ctx.fillStyle="#00d2ff"; ctx.fillRect(m.x-20, m.y-20, 40, 10); // แสงไฟเครื่องถ่ายเอกสาร
+        ctx.fillStyle="#00d2ff"; ctx.fillRect(m.x-20, m.y-20, 40, 10);
     });
     
-    ctx.shadowBlur = 0; ctx.shadowOffsetY = 0; // ปิดเงาสำหรับบ่อน้ำ
+    ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
     wetFloors.forEach(f => { ctx.fillStyle="rgba(0, 210, 255, 0.1)"; ctx.beginPath(); ctx.arc(f.x,f.y,f.r,0,Math.PI*2); ctx.fill(); });
     
     ctx.shadowBlur = 10; ctx.shadowOffsetY = 5;
@@ -329,7 +371,6 @@ function draw() {
         ctx.fillStyle="#fff"; ctx.font="bold 22px Kanit"; ctx.textAlign="center"; ctx.fillText("ตู้กดน้ำ 💧", c.x, c.y+8); 
     });
     
-    // วาดฉากกั้นพาร์ทิชันให้ดูมีมิติ
     partitions.forEach(p => { 
         let grad = ctx.createLinearGradient(p.x, p.y, p.x+p.w, p.y+p.h);
         grad.addColorStop(0, "#334155"); grad.addColorStop(1, "#1e293b");
@@ -341,32 +382,24 @@ function draw() {
 
     ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
 
-    // ไอเทมเรืองแสง
     items.forEach(it => { 
         ctx.save(); if(it.life<120) ctx.globalAlpha = (it.life%20<10)?0.3:1; 
         ctx.shadowColor = it.type==='yadom'?"#4caf50":(it.type==='bomb'?"#ff5252":"#ffffff");
-        ctx.shadowBlur = 15 + Math.sin(Date.now()/150)*10; // เอฟเฟกต์กระพริบ
+        ctx.shadowBlur = 15 + Math.sin(Date.now()/150)*10;
         ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(it.x,it.y,22,0,Math.PI*2); ctx.fill(); 
         ctx.fillStyle="#000"; ctx.font="24px Arial"; ctx.textAlign="center"; ctx.fillText(it.type==='yadom'?'🌿':(it.type==='bomb'?'💣':'☁️'), it.x, it.y+8); 
         ctx.restore(); 
     });
 
-    // 🚨 กระสุนน้ำเรืองแสง (Neon Glow)
     localSplashes.forEach(s => { 
-        ctx.save();
-        ctx.shadowColor = s.isP ? '#ffffff' : '#00d2ff';
-        ctx.shadowBlur = 15;
-        ctx.fillStyle = s.isP ? '#ffffff' : '#00d2ff'; 
-        ctx.beginPath(); ctx.arc(s.x,s.y,12,0,Math.PI*2); ctx.fill(); 
-        ctx.restore();
+        ctx.save(); ctx.shadowColor = s.isP ? '#ffffff' : '#00d2ff'; ctx.shadowBlur = 15;
+        ctx.fillStyle = s.isP ? '#ffffff' : '#00d2ff'; ctx.beginPath(); ctx.arc(s.x,s.y,12,0,Math.PI*2); ctx.fill(); ctx.restore();
     });
 
-    // วาดผู้เล่นอื่น
     players.forEach(p => { 
         if(p.name !== my.name){ let d = Math.hypot(p.x-my.x, p.y-my.y); if(!p.is_hidden || p.hp<=0 || d<150 || p.isTop1) drawAvatar(p.x, p.y, p.name, p.hp, false, p.isTop1); } 
     });
 
-    // วาดบอส (เรืองแสงสีแดงน่ากลัว)
     bosses.forEach(boss => {
         if (boss.hp <= 0 || boss.deadTimer > 0) return;
         ctx.save();
@@ -375,10 +408,7 @@ function draw() {
         if (boss.isSupreme && ctx.globalAlpha > 0) { ctx.beginPath(); ctx.arc(boss.x, boss.y, 350, 0, Math.PI*2); ctx.fillStyle = "rgba(211, 47, 47, 0.05)"; ctx.fill(); ctx.strokeStyle = "rgba(211, 47, 47, 0.4)"; ctx.lineWidth = 2; ctx.setLineDash([10, 10]); ctx.stroke(); ctx.setLineDash([]); }
 
         if (ctx.globalAlpha > 0) {
-            // ออร่าบอส
-            ctx.shadowColor = boss.color;
-            ctx.shadowBlur = boss.rageTimer > 0 ? 30 : 15;
-            
+            ctx.shadowColor = boss.color; ctx.shadowBlur = boss.rageTimer > 0 ? 30 : 15;
             let grad = ctx.createRadialGradient(boss.x, boss.y, boss.radius*0.2, boss.x, boss.y, boss.radius);
             grad.addColorStop(0, "#ff5252"); grad.addColorStop(1, boss.color);
             ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(boss.x, boss.y, boss.radius, 0, Math.PI*2); ctx.fill(); 
@@ -387,7 +417,6 @@ function draw() {
             ctx.shadowBlur = 0;
             ctx.fillStyle="#fff"; ctx.font="bold 22px Kanit"; ctx.textAlign="center"; ctx.fillText(boss.name, boss.x, boss.y-boss.radius-20);
             
-            // ตาบอสเรืองแสง
             ctx.shadowColor = "#ffeb3b"; ctx.shadowBlur = 10;
             ctx.fillStyle = boss.rageTimer > 0 ? "#ffeb3b" : "white"; ctx.beginPath(); ctx.arc(boss.x-12, boss.y-5, 6, 0, Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.arc(boss.x+12, boss.y-5, 6, 0, Math.PI*2); ctx.fill();
             ctx.shadowBlur = 0;
@@ -404,7 +433,6 @@ function draw() {
         ctx.restore();
     });
 
-    // วาดตัวเราเอง
     if (gameStarted) {
         ctx.globalAlpha = my.is_hidden ? 0.4 : 1;
         if(my.hp > 0 && !(my.invulTimer>0 && Math.floor(Date.now()/150)%2===0)) { drawAvatar(my.x, my.y, my.name, my.hp, my.invulTimer>0, my.isTop1); }
@@ -418,7 +446,6 @@ function draw() {
     }
 }
 
-// 🚨 อัปเกรดการวาดตัวละครให้มีมิติ
 function drawAvatar(x, y, name, hp, invul, isTop1) {
     if(hp <= 0) return; ctx.save(); 
     ctx.globalAlpha *= Math.max(0.4, hp/5); 
@@ -429,16 +456,14 @@ function drawAvatar(x, y, name, hp, invul, isTop1) {
         ctx.shadowBlur = 0;
     }
     
-    // เงาตัวละคร
     ctx.shadowColor = "rgba(0,0,0,0.5)"; ctx.shadowBlur = 10; ctx.shadowOffsetY = 5;
     
-    // ตัวละคร
     let grad = ctx.createRadialGradient(x, y, 5, x, y, 22);
     grad.addColorStop(0, "#ff8a65"); grad.addColorStop(1, "#e64a19");
     ctx.fillStyle=grad; ctx.beginPath(); ctx.arc(x,y,22,0,Math.PI*2); ctx.fill(); 
     ctx.strokeStyle="#fff"; ctx.lineWidth=3; ctx.stroke();
     
-    ctx.shadowBlur = 0; ctx.shadowOffsetY = 0; // ปิดเงา
+    ctx.shadowBlur = 0; ctx.shadowOffsetY = 0; 
 
     ctx.fillStyle="#e91e63"; ctx.font="18px Arial"; ctx.textAlign="center"; ctx.fillText("❤️".repeat(hp), x, y-35);
     if(invul && name===my.name) { ctx.fillStyle="#ffeb3b"; ctx.font="bold 20px Kanit"; ctx.fillText("อมตะ!", x, y-60); }

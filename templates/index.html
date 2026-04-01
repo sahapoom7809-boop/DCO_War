@@ -110,16 +110,14 @@ const partitions = [
 const copiers = [{x:2500,y:1100,r:150}, {x:1500,y:2500,r:150}, {x:800,y:1500,r:120}]; 
 const wetFloors = [{x:2000,y:1750,r:320}, {x:1000,y:2000,r:200}, {x:3000,y:1500,r:200}]; 
 
-// 🚨 ระบบป้องกันสุ่มเกิดในกำแพง! 
 function getSafeSpawn() {
     for(let i=0; i<50; i++) {
         let px = Math.random() * (WORLD.w - 400) + 200;
         let py = Math.random() * (WORLD.h - 400) + 200;
-        // เช็คว่าพิกัดที่สุ่มได้ ซ้อนทับกับกำแพง (บวกระยะห่างตัวละคร) หรือไม่
         let inWall = partitions.some(p => px + 30 > p.x && px - 30 < p.x + p.w && py + 30 > p.y && py - 30 < p.y + p.h);
-        if(!inWall) return {x: px, y: py}; // ถ้าปลอดภัยให้ใช้จุดนี้
+        if(!inWall) return {x: px, y: py}; 
     }
-    return {x: 1000, y: 1000}; // จุดสำรองกรณีฉุกเฉิน
+    return {x: 1000, y: 1000}; 
 }
 
 document.getElementById('startBtn').addEventListener('click', () => {
@@ -133,7 +131,7 @@ document.getElementById('startBtn').addEventListener('click', () => {
     document.getElementById('ui').style.display = 'block'; document.getElementById('leaderboard').style.display = 'block';
     if (isMobile) document.getElementById('joy-move-zone').style.display = 'block';
     
-    let spawn = getSafeSpawn(); // 🚨 ใช้ระบบสุ่มจุดเกิดแบบปลอดภัย
+    let spawn = getSafeSpawn(); 
     my.x = spawn.x; my.y = spawn.y; my.hp = 5; my.invulTimer = 180;
     gameStarted = true;
 });
@@ -181,6 +179,9 @@ function takeDamage(shooter, isP) {
     my.hp--; updateUI();
     const f = document.getElementById('damage-flash'); f.style.opacity = 1; setTimeout(()=>f.style.opacity=0, 150);
     
+    // 🚨 บัฟพนักงาน: โดนยิงแล้วอมตะ 1.5 วินาที จะได้ไม่โดนยิงซ้ำรัวๆ
+    my.invulTimer = 90; 
+    
     if(my.hp <= 0) {
         socket.emit('player_update', my); 
         if (!shooter.startsWith("🕴️")) { socket.emit('player_killed', {killer: shooter, victim: my.name}); }
@@ -188,7 +189,7 @@ function takeDamage(shooter, isP) {
         document.getElementById('boss-flash').style.opacity=1;
         setTimeout(() => {
             document.getElementById('boss-flash').style.opacity=0; 
-            let spawn = getSafeSpawn(); // 🚨 ใช้จุดเกิดแบบปลอดภัย
+            let spawn = getSafeSpawn(); 
             my.x = spawn.x; my.y = spawn.y; my.hp=5; my.ammo=0; my.vx=0; my.vy=0; my.speedTimer=0; my.powderAmmo=0; my.bombAmmo=0; my.invulTimer=180; my.blindTimer=0; updateUI();
         }, 1500);
     }
@@ -245,19 +246,18 @@ socket.on('world_update', (data) => {
     });
 });
 
-let lastFrameTime = performance.now(); // 🚨 ตัวแปรจับเวลาสำหรับแก้คนวิ่งช้า
+let lastFrameTime = performance.now(); 
 
 function update() {
-    // 🚨 คำนวณ Delta Time เพื่อให้ทุกจอมือถือวิ่งเร็วเท่ากัน
     let nowTime = performance.now();
     let dt = (nowTime - lastFrameTime) / 16.666;
     lastFrameTime = nowTime;
-    if (dt > 3) dt = 3; // ป้องกันบั๊กเวลาสลับแอปไปมา
+    if (dt > 3) dt = 3; 
 
     if (gameStarted) {
         if (my.hp > 0) {
-            let s = 5.5 * dt; // 🚨 ปรับความเร็วตาม dt
-            if(my.speedTimer > 0){ s = 9 * dt; my.speedTimer -= dt; if(my.speedTimer<=0) updateUI(); }
+            let s = 6.5 * dt; // 🚨 บัฟให้พนักงานวิ่งเร็วขึ้นนิดนึง! (จาก 5.5 เป็น 6.5)
+            if(my.speedTimer > 0){ s = 10 * dt; my.speedTimer -= dt; if(my.speedTimer<=0) updateUI(); }
             if(my.invulTimer > 0) my.invulTimer -= dt;
             if(my.blindTimer > 0) my.blindTimer -= dt; 
             document.getElementById('blind-flash').style.opacity = my.blindTimer > 0 ? 0.98 : 0;
@@ -311,7 +311,7 @@ function update() {
                 document.getElementById('boss-flash').style.opacity=1;
                 setTimeout(() => { 
                     document.getElementById('boss-flash').style.opacity=0; 
-                    let spawn = getSafeSpawn(); // 🚨 ใช้จุดเกิดแบบปลอดภัย
+                    let spawn = getSafeSpawn(); 
                     my.x = spawn.x; my.y = spawn.y; my.hp = 5; my.ammo = 0; my.vx = 0; my.vy = 0; my.speedTimer = 0; my.powderAmmo = 0; my.bombAmmo = 0; my.invulTimer = 180; updateUI(); 
                 }, 2500);
             }
@@ -403,9 +403,19 @@ function draw() {
     bosses.forEach(boss => {
         if (boss.hp <= 0 || boss.deadTimer > 0) return;
         ctx.save();
-        if (boss.invisible) { if (boss.stunTimer <= 0 && boss.textTimer <= 0) { let phase = Date.now() % 4500; if (phase < 3000) { ctx.globalAlpha = 0; } else { ctx.globalAlpha = 0.15; } } else { ctx.globalAlpha = 0.8; } } else { ctx.globalAlpha = 1; }
         
-        if (boss.isSupreme && ctx.globalAlpha > 0) { ctx.beginPath(); ctx.arc(boss.x, boss.y, 350, 0, Math.PI*2); ctx.fillStyle = "rgba(211, 47, 47, 0.05)"; ctx.fill(); ctx.strokeStyle = "rgba(211, 47, 47, 0.4)"; ctx.lineWidth = 2; ctx.setLineDash([10, 10]); ctx.stroke(); ctx.setLineDash([]); }
+        // 🚨 ปรับความโปร่งใสของพี่หนู ให้ยังเห็นเป็นเงาลางๆ 8% 
+        if (boss.invisible) { 
+            if (boss.stunTimer <= 0 && boss.textTimer <= 0) { 
+                let phase = Date.now() % 4500; 
+                if (phase < 3000) { ctx.globalAlpha = 0.08; } // เห็นลางๆ 8%
+                else { ctx.globalAlpha = 0.25; } // โผล่มานิดนึง 25%
+            } else { 
+                ctx.globalAlpha = 0.8; 
+            } 
+        } else { ctx.globalAlpha = 1; }
+        
+        if (boss.isSupreme && ctx.globalAlpha > 0.1) { ctx.beginPath(); ctx.arc(boss.x, boss.y, 350, 0, Math.PI*2); ctx.fillStyle = "rgba(211, 47, 47, 0.05)"; ctx.fill(); ctx.strokeStyle = "rgba(211, 47, 47, 0.4)"; ctx.lineWidth = 2; ctx.setLineDash([10, 10]); ctx.stroke(); ctx.setLineDash([]); }
 
         if (ctx.globalAlpha > 0) {
             ctx.shadowColor = boss.color; ctx.shadowBlur = boss.rageTimer > 0 ? 30 : 15;

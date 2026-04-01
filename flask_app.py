@@ -20,6 +20,13 @@ bosses_state = []
 thread = None
 thread_lock = Lock()
 
+# 🚨 เพิ่มข้อมูลกำแพง (Partitions) ให้เซิร์ฟเวอร์รู้จัก เพื่อกันบอสเดินทะลุ
+PARTITIONS = [
+    {'x':1700,'y':1400,'w':200,'h':40}, {'x':2100,'y':1400,'w':200,'h':40}, {'x':1700,'y':2070,'w':200,'h':40}, {'x':2100,'y':2070,'w':200,'h':40},
+    {'x':1700,'y':1400,'w':40,'h':250}, {'x':1700,'y':1850,'w':40,'h':250}, {'x':2270,'y':1400,'w':40,'h':250}, {'x':2270,'y':1850,'w':40,'h':250},
+    {'x':800,'y':600,'w':400,'h':40}, {'x':2800,'y':2300,'w':500,'h':40}, {'x':600,'y':2500,'w':40,'h':500}
+]
+
 bossProfiles = {
     "พี่ตุ๊": { 'maxHp': 250, 'killScore': 500, 'radius': 40, 'speed': 3.5, 'color': "#d32f2f", 'text': "แจกงานด่วน!!", 'stunTime': 5, 'rageMult': 1.5, 'seeThrough': True, 'vision': 900, 'canShoot': True, 'invisible': False, 'isSupreme': True }, 
     "พี่พงษ์": { 'maxHp': 100, 'killScore': 200, 'radius': 30, 'speed': 2.8, 'color': "#1976d2", 'text': "แก้ตรงนี้นิดนึง", 'stunTime': 45, 'rageMult': 1.5, 'seeThrough': True, 'vision': 700, 'canShoot': False, 'invisible': False, 'isSupreme': False }, 
@@ -118,8 +125,24 @@ def game_loop():
                         if random.random() < (0.02 * frames): boss['angle'] += random.uniform(-1.0, 1.0)
                         currentBossSpeed *= 0.6
 
-                    boss['x'] += math.cos(boss['angle']) * currentBossSpeed * frames
-                    boss['y'] += math.sin(boss['angle']) * currentBossSpeed * frames
+                    # 🚨 ระบบจำลองการเดินและการชนกำแพงของบอส
+                    next_x = boss['x'] + math.cos(boss['angle']) * currentBossSpeed * frames
+                    next_y = boss['y'] + math.sin(boss['angle']) * currentBossSpeed * frames
+                    br = boss['radius'] * 0.7 # ย่อ hitbox ลงนิดนึง บอสจะได้ไม่ติดเหลี่ยมง่ายเกินไป
+                    
+                    hit_wall_x = any(next_x+br > p['x'] and next_x-br < p['x']+p['w'] and boss['y']+br > p['y'] and boss['y']-br < p['y']+p['h'] for p in PARTITIONS)
+                    hit_wall_y = any(boss['x']+br > p['x'] and boss['x']-br < p['x']+p['w'] and next_y+br > p['y'] and next_y-br < p['y']+p['h'] for p in PARTITIONS)
+
+                    if not hit_wall_x:
+                        boss['x'] = next_x
+                    else:
+                        # ถ้าเดินชนกำแพงแบบสุ่มเดิน ให้เด้งกลับ
+                        if targetX is None: boss['angle'] = math.pi - boss['angle']
+
+                    if not hit_wall_y:
+                        boss['y'] = next_y
+                    else:
+                        if targetX is None: boss['angle'] = -boss['angle']
 
                     r = boss['radius']
                     if boss['x'] < r or boss['x'] > WORLD['w']-r: boss['angle'] = math.pi - boss['angle']

@@ -10,7 +10,8 @@ from threading import Lock
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'dco_secret_2026'
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
+# 🚨 ใส่ ping_timeout ป้องกัน Error [Errno 9]
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet', ping_timeout=60, ping_interval=25)
 
 WORLD = { 'w': 4000, 'h': 3500 }
 players_state = {}
@@ -20,19 +21,19 @@ bosses_state = []
 thread = None
 thread_lock = Lock()
 
-# 🚨 เพิ่มข้อมูลกำแพง (Partitions) ให้เซิร์ฟเวอร์รู้จัก เพื่อกันบอสเดินทะลุ
 PARTITIONS = [
     {'x':1700,'y':1400,'w':200,'h':40}, {'x':2100,'y':1400,'w':200,'h':40}, {'x':1700,'y':2070,'w':200,'h':40}, {'x':2100,'y':2070,'w':200,'h':40},
     {'x':1700,'y':1400,'w':40,'h':250}, {'x':1700,'y':1850,'w':40,'h':250}, {'x':2270,'y':1400,'w':40,'h':250}, {'x':2270,'y':1850,'w':40,'h':250},
     {'x':800,'y':600,'w':400,'h':40}, {'x':2800,'y':2300,'w':500,'h':40}, {'x':600,'y':2500,'w':40,'h':500}
 ]
 
+# 🚨 อัปเดตคำพูดบอสให้เป็นธีมเช็ค
 bossProfiles = {
-    "พี่ตุ๊": { 'maxHp': 250, 'killScore': 500, 'radius': 40, 'speed': 3.5, 'color': "#d32f2f", 'text': "แจกงานด่วน!!", 'stunTime': 5, 'rageMult': 1.5, 'seeThrough': True, 'vision': 900, 'canShoot': True, 'invisible': False, 'isSupreme': True }, 
-    "พี่พงษ์": { 'maxHp': 100, 'killScore': 200, 'radius': 30, 'speed': 2.8, 'color': "#1976d2", 'text': "แก้ตรงนี้นิดนึง", 'stunTime': 45, 'rageMult': 1.5, 'seeThrough': True, 'vision': 700, 'canShoot': False, 'invisible': False, 'isSupreme': False }, 
-    "พี่เอ": { 'maxHp': 100, 'killScore': 200, 'radius': 55, 'speed': 3.0, 'color': "#388e3c", 'text': "เอาโพสต์อิทไปแปะ!!", 'stunTime': 0, 'rageMult': 1.5, 'seeThrough': False, 'vision': 600, 'canShoot': True, 'invisible': False, 'isSupreme': False }, 
+    "พี่ตุ๊": { 'maxHp': 250, 'killScore': 500, 'radius': 40, 'speed': 3.5, 'color': "#d32f2f", 'text': "เคลียร์เช็คด่วน!!", 'stunTime': 5, 'rageMult': 1.5, 'seeThrough': True, 'vision': 900, 'canShoot': True, 'invisible': False, 'isSupreme': True }, 
+    "พี่พงษ์": { 'maxHp': 100, 'killScore': 200, 'radius': 30, 'speed': 2.8, 'color': "#1976d2", 'text': "แก้เช็คใบนี้หน่อย", 'stunTime': 45, 'rageMult': 1.5, 'seeThrough': True, 'vision': 700, 'canShoot': False, 'invisible': False, 'isSupreme': False }, 
+    "พี่เอ": { 'maxHp': 100, 'killScore': 200, 'radius': 55, 'speed': 3.0, 'color': "#388e3c", 'text': "เอาเช็คเด้งไป!!", 'stunTime': 0, 'rageMult': 1.5, 'seeThrough': False, 'vision': 600, 'canShoot': True, 'invisible': False, 'isSupreme': False }, 
     "พี่หนู": { 'maxHp': 100, 'killScore': 200, 'radius': 25, 'speed': 2.2, 'color': "#e91e63", 'text': "แอบอยู่นี่เอง~", 'stunTime': 30, 'rageMult': 1.2, 'seeThrough': False, 'vision': 400, 'canShoot': False, 'invisible': True, 'isSupreme': False }, 
-    "พี่โอ๋": { 'maxHp': 100, 'killScore': 200, 'radius': 30, 'speed': 4.0, 'color': "#f57c00", 'text': "ด่วนๆๆ เอาเดี๋ยวนี้!", 'stunTime': 40, 'rageMult': 1.3, 'seeThrough': False, 'vision': 500, 'canShoot': False, 'invisible': False, 'isSupreme': False } 
+    "พี่โอ๋": { 'maxHp': 100, 'killScore': 200, 'radius': 30, 'speed': 4.0, 'color': "#f57c00", 'text': "เซ็นเช็คเดี๋ยวนี้!", 'stunTime': 40, 'rageMult': 1.3, 'seeThrough': False, 'vision': 500, 'canShoot': False, 'invisible': False, 'isSupreme': False } 
 }
 
 def create_global_bosses():
@@ -125,10 +126,9 @@ def game_loop():
                         if random.random() < (0.02 * frames): boss['angle'] += random.uniform(-1.0, 1.0)
                         currentBossSpeed *= 0.6
 
-                    # 🚨 ระบบจำลองการเดินและการชนกำแพงของบอส
                     next_x = boss['x'] + math.cos(boss['angle']) * currentBossSpeed * frames
                     next_y = boss['y'] + math.sin(boss['angle']) * currentBossSpeed * frames
-                    br = boss['radius'] * 0.7 # ย่อ hitbox ลงนิดนึง บอสจะได้ไม่ติดเหลี่ยมง่ายเกินไป
+                    br = boss['radius'] * 0.7 
                     
                     hit_wall_x = any(next_x+br > p['x'] and next_x-br < p['x']+p['w'] and boss['y']+br > p['y'] and boss['y']-br < p['y']+p['h'] for p in PARTITIONS)
                     hit_wall_y = any(boss['x']+br > p['x'] and boss['x']-br < p['x']+p['w'] and next_y+br > p['y'] and next_y-br < p['y']+p['h'] for p in PARTITIONS)
@@ -136,7 +136,6 @@ def game_loop():
                     if not hit_wall_x:
                         boss['x'] = next_x
                     else:
-                        # ถ้าเดินชนกำแพงแบบสุ่มเดิน ให้เด้งกลับ
                         if targetX is None: boss['angle'] = math.pi - boss['angle']
 
                     if not hit_wall_y:

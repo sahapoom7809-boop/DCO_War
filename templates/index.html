@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>DCO: THE OFFICE SURVIVAL</title>
+    <title>DCO: CHEQUE WAR</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.1/socket.io.min.js"></script>
     <style>
@@ -10,7 +10,7 @@
         
         #start-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.9); z-index: 2000; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(8px); }
         .start-box { background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255,255,255,0.2); backdrop-filter: blur(15px); padding: 40px; border-radius: 20px; text-align: center; box-shadow: 0 15px 35px rgba(0,0,0,0.5); max-width: 90%; width: 380px; color: white; }
-        .start-box h1 { color: #f8fafc; margin-top: 0; font-size: 32px; text-shadow: 0 0 10px rgba(255, 255, 255, 0.5); letter-spacing: 1px;}
+        .start-box h1 { color: #00d2ff; margin-top: 0; font-size: 32px; text-shadow: 0 0 10px rgba(0, 210, 255, 0.5); letter-spacing: 1px;}
         .start-box p { color: #ccc; margin-bottom: 25px; font-size: 16px; }
         .start-box input { width: 85%; padding: 15px; font-size: 18px; font-family: 'Kanit'; background: rgba(0,0,0,0.5); color: #fff; border: 2px solid #cbd5e1; border-radius: 10px; margin-bottom: 25px; text-align: center; outline: none; transition: 0.3s;}
         .start-box input:focus { box-shadow: 0 0 15px rgba(255, 255, 255, 0.5); }
@@ -18,8 +18,6 @@
         .start-box button:active { transform: scale(0.95); }
 
         #ui { position: absolute; top: 15px; left: 15px; color: #fff; background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); border-left: 5px solid #cbd5e1; z-index: 10; font-size: 15px; box-shadow: 0 8px 32px rgba(0,0,0,0.3); pointer-events: none; display: none;}
-        #ammo-bar { width: 160px; height: 14px; background: rgba(0,0,0,0.5); border-radius: 7px; overflow: hidden; margin-top: 8px; border: 1px solid rgba(255,255,255,0.2); }
-        #ammo-fill { width: 100%; height: 100%; background: linear-gradient(90deg, #f8fafc, #94a3b8); transition: width 0.1s; box-shadow: 0 0 10px rgba(255, 255, 255, 0.8);}
         
         #leaderboard { position: absolute; top: 15px; right: 15px; width: 160px; color: #fff; background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(10px); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); z-index: 10; font-size: 14px; pointer-events: none; display: none; box-shadow: 0 8px 32px rgba(0,0,0,0.3);}
         .lb-row { display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding: 5px 0; }
@@ -41,15 +39,15 @@
 
 <div id="start-screen">
     <div class="start-box">
-        <h1>📄 DCO PAPER WAR</h1>
-        <p>สงครามกระดาษแห่งออฟฟิศ เริ่มขึ้นแล้ว!</p>
+        <h1>💸 DCO CHEQUE WAR</h1>
+        <p>สงครามปาเช็คแห่งออฟฟิศ เริ่มขึ้นแล้ว!</p>
         <input type="text" id="startNameInput" placeholder="พิมพ์ชื่อพนักงาน..." maxlength="12"><br>
-        <button id="startBtn">ลงสนามปะทะ! 📄</button>
+        <button id="startBtn">ลงสนามปะทะ! 💸</button>
     </div>
 </div>
 
 <div id="damage-flash"></div>
-<div id="blind-flash"><h1 style="color:#e91e63; font-size: 40px;">โดนโพสต์อิทแปะหน้า!</h1><p style="color:#333; font-size: 20px;">มองไม่เห็น 3 วินาที...</p></div>
+<div id="blind-flash"><h1 style="color:#e91e63; font-size: 40px;">โดนใบแจ้งหนี้แปะหน้า!</h1><p style="color:#333; font-size: 20px;">มองไม่เห็น 3 วินาที...</p></div>
 <div id="boss-flash">
     <h1 id="boss-flash-title" style="color:#ffeb3b; font-size: 45px; text-shadow: 0 0 20px rgba(255,235,59,0.8);">โดนตามงานด่วน!!</h1>
     <p id="boss-flash-desc" style="color:white; font-size:24px;">💀 เตรียมตัวเกิดใหม่...</p>
@@ -59,8 +57,7 @@
 <div id="ui">
     <b style="font-size: 16px;">📎 พนักงาน: <span id="pNameDisplay" style="color:#f8fafc; text-shadow: 0 0 5px rgba(255,255,255,0.5);"></span></b><br>
     <div style="margin-top: 5px;">พลังใจ: <span id="hp-text">❤️❤️❤️❤️❤️</span></div>
-    <div style="margin-top: 5px;">กระดาษขยำ: <span id="ammo-text" style="color:#f8fafc; font-weight:bold;">15 / 15</span></div>
-    <div id="ammo-bar"><div id="ammo-fill"></div></div>
+    <div style="margin-top: 5px;">ใบเช็ค: <span style="color:#00d2ff; font-weight:bold; font-size: 18px;">∞ (ปาไม่อั้น!)</span></div>
     <div id="buff-text" style="margin-top:8px; font-weight:bold; color:#ffeb3b; height: 18px; text-shadow: 0 0 5px rgba(255,235,59,0.5);"></div>
 </div>
 
@@ -74,7 +71,8 @@
 <canvas id="gameCanvas"></canvas>
 
 <script>
-const socket = io();
+// 🚨 บังคับใช้ websocket แท้ๆ เพื่อลดการหลุดเชื่อมต่อ
+const socket = io({ transports: ['websocket'], upgrade: false });
 
 const isMobile = window.innerWidth < 768;
 const cameraScale = isMobile ? 0.38 : 0.85; 
@@ -96,7 +94,7 @@ if (savedName) {
     document.getElementById('startNameInput').value = "Staff_" + Math.floor(Math.random() * 1000);
 }
 
-let my = { name: "", x: WORLD.w/2, y: WORLD.h/2, hp: 5, ammo: 15, maxAmmo: 15, radius: 20, is_hidden: false, facingAngle: 0, vx: 0, vy: 0, speedTimer: 0, powderAmmo: 0, bombAmmo: 0, blindTimer: 0, invulTimer: 180, isTop1: false, saved_score: savedScore };
+let my = { name: "", x: WORLD.w/2, y: WORLD.h/2, hp: 5, radius: 20, is_hidden: false, facingAngle: 0, vx: 0, vy: 0, speedTimer: 0, powderAmmo: 0, bombAmmo: 0, blindTimer: 0, invulTimer: 180, isTop1: false, saved_score: savedScore };
 
 let bosses = []; let players = []; let localSplashes = []; let processedShots = new Set(); let items = [];
 
@@ -150,15 +148,16 @@ canvas.addEventListener('mousedown', e => handleShoot(e.clientX, e.clientY));
 canvas.addEventListener('touchstart', e => { if(e.target === canvas){ e.preventDefault(); handleShoot(e.changedTouches[0].clientX, e.changedTouches[0].clientY); } }, {passive: false});
 
 function handleShoot(cx, cy) {
-    if(!gameStarted || my.ammo < 1 || my.hp <= 0) return;
+    // 🚨 เอาการเช็ค my.ammo ออก เพราะปาได้เรื่อยๆ ไม่มีวันหมด
+    if(!gameStarted || my.hp <= 0) return;
     
     if (my.bombAmmo > 0) {
-        my.bombAmmo--; my.ammo--; updateUI();
+        my.bombAmmo--; updateUI();
         for(let i=0; i<8; i++) { let angle = (Math.PI / 4) * i; let tx = my.x + Math.cos(angle) * 800; let ty = my.y + Math.sin(angle) * 800; createSplash(my.x, my.y, tx, ty, my.name, 0, false); socket.emit('player_shoot', {name: my.name, x: my.x, y: my.y, tx: tx, ty: ty}); }
         return;
     }
 
-    my.ammo--; let isPowder = false; if(my.powderAmmo > 0){ isPowder = true; my.powderAmmo--; } updateUI();
+    let isPowder = false; if(my.powderAmmo > 0){ isPowder = true; my.powderAmmo--; } updateUI();
     const sw = (canvas.width/2)/cameraScale, sh = (canvas.height/2)/cameraScale;
     const tx = my.x + (cx/cameraScale) - sw, ty = my.y + (cy/cameraScale) - sh;
     my.facingAngle = Math.atan2(ty-my.y, tx-my.x);
@@ -184,21 +183,20 @@ function takeDamage(shooter, isP) {
     if(my.hp <= 0) {
         socket.emit('player_update', my); 
         if (!shooter.startsWith("🕴️")) { socket.emit('player_killed', {killer: shooter, victim: my.name}); }
-        document.getElementById('boss-flash-title').innerText = "📄 โดนปาร่วงซะแล้ว..."; document.getElementById('boss-flash-title').style.color = "#ffeb3b";
+        document.getElementById('boss-flash-title').innerText = "💸 โดนปาร่วงซะแล้ว..."; document.getElementById('boss-flash-title').style.color = "#ffeb3b";
         document.getElementById('boss-flash').style.opacity=1;
         setTimeout(() => {
             document.getElementById('boss-flash').style.opacity=0; 
             let spawn = getSafeSpawn(); 
-            my.x = spawn.x; my.y = spawn.y; my.hp=5; my.ammo=0; my.vx=0; my.vy=0; my.speedTimer=0; my.powderAmmo=0; my.bombAmmo=0; my.invulTimer=180; my.blindTimer=0; updateUI();
+            // 🚨 ตายแล้วเกิดใหม่ ของพิเศษหายไป แต่กระสุนธรรมดายังปาได้เลย
+            my.x = spawn.x; my.y = spawn.y; my.hp=5; my.vx=0; my.vy=0; my.speedTimer=0; my.powderAmmo=0; my.bombAmmo=0; my.invulTimer=180; my.blindTimer=0; updateUI();
         }, 1500);
     }
 }
 
 function updateUI() {
-    document.getElementById('ammo-text').innerText = `${Math.floor(my.ammo)} / ${my.maxAmmo}`;
-    document.getElementById('ammo-fill').style.width = (my.ammo/my.maxAmmo*100) + "%";
     document.getElementById('hp-text').innerText = "❤️".repeat(Math.max(0, my.hp)) + "🤍".repeat(Math.max(0, 5-my.hp));
-    let b = ""; if(my.speedTimer > 0) b += "🌿 ยาดมออกฤทธิ์! "; if(my.powderAmmo > 0) b += `📝 โพสต์อิท (${my.powderAmmo}) `; if(my.bombAmmo > 0) b += `📚 พายุกระดาษ (${my.bombAmmo})`; document.getElementById('buff-text').innerText = b;
+    let b = ""; if(my.speedTimer > 0) b += "🌿 ยาดมออกฤทธิ์! "; if(my.powderAmmo > 0) b += `🧾 ใบแจ้งหนี้ (${my.powderAmmo}) `; if(my.bombAmmo > 0) b += `💰 พายุเช็ค (${my.bombAmmo})`; document.getElementById('buff-text').innerText = b;
 }
 
 socket.on('kill_announcement', (data) => {
@@ -209,7 +207,7 @@ socket.on('kill_announcement', (data) => {
     else if(data.killer === my.name) {
         kf.innerHTML = `🔥 คุณจัดการ <b>${data.victim}</b> ได้สำเร็จ!<br><span style="color:#ffeb3b; font-size:18px;">+ โบนัสคะแนน!</span>`;
     } else {
-        kf.innerHTML = `💀 <b style="color:#cbd5e1">${data.killer}</b> ปากระดาษใส่ <b style="color:#ff5252">${data.victim}</b> ร่วง!`;
+        kf.innerHTML = `💀 <b style="color:#cbd5e1">${data.killer}</b> ปาเช็คอัดหน้า <b style="color:#ff5252">${data.victim}</b> ร่วง!`;
     }
     kf.style.opacity = 1; kf.style.transform = "translateX(-50%) translateY(40px) scale(1.1)";
     setTimeout(() => { kf.style.opacity = 0; kf.style.transform = "translateX(-50%) translateY(0px) scale(1)"; }, 3500);
@@ -277,7 +275,6 @@ function update() {
             if(!hw) my.x = Math.max(20, Math.min(WORLD.w-20, nx)); if(!hh) my.y = Math.max(20, Math.min(WORLD.h-20, ny));
 
             my.is_hidden = paperStacks.some(p => Math.hypot(my.x-p.x, my.y-p.y) < p.r);
-            waterCoolers.forEach(c => { if(Math.hypot(my.x-c.x, my.y-c.y) < c.r) { if (my.ammo < my.maxAmmo) my.ammo = Math.min(my.maxAmmo, my.ammo+(0.4*dt)); updateUI(); } });
 
             if(Math.random() < (0.02 * dt) && items.length < 15){
                 let ix = Math.random()*(WORLD.w-200)+100, iy = Math.random()*(WORLD.h-200)+100;
@@ -305,13 +302,13 @@ function update() {
         if (gameStarted && my.hp > 0 && my.invulTimer <= 0) {
             if (Math.hypot(my.x - boss.x, my.y - boss.y) < boss.radius + my.radius) {
                 socket.emit('player_dead', {name:my.name, boss_name: boss.name});
-                my.hp = 0; my.ammo = 0; my.blindTimer = 0; updateUI(); socket.emit('player_update', my);
+                my.hp = 0; my.blindTimer = 0; updateUI(); socket.emit('player_update', my);
                 document.getElementById('boss-flash-title').innerText = boss.name + " จับได้!!"; document.getElementById('boss-flash-title').style.color = "#ff5252";
                 document.getElementById('boss-flash').style.opacity=1;
                 setTimeout(() => { 
                     document.getElementById('boss-flash').style.opacity=0; 
                     let spawn = getSafeSpawn(); 
-                    my.x = spawn.x; my.y = spawn.y; my.hp = 5; my.ammo = 0; my.vx = 0; my.vy = 0; my.speedTimer = 0; my.powderAmmo = 0; my.bombAmmo = 0; my.invulTimer = 180; updateUI(); 
+                    my.x = spawn.x; my.y = spawn.y; my.hp = 5; my.vx = 0; my.vy = 0; my.speedTimer = 0; my.powderAmmo = 0; my.bombAmmo = 0; my.invulTimer = 180; updateUI(); 
                 }, 2500);
             }
             if (boss.isSupreme) {
@@ -365,9 +362,9 @@ function draw() {
     ctx.shadowBlur = 10; ctx.shadowOffsetY = 5;
     waterCoolers.forEach(c => { 
         let grad = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, c.r);
-        grad.addColorStop(0, "#fbbf24"); grad.addColorStop(1, "#b45309"); // 🚨 สีลังกระดาษน้ำตาลทอง
+        grad.addColorStop(0, "#fbbf24"); grad.addColorStop(1, "#b45309"); 
         ctx.fillStyle=grad; ctx.beginPath(); ctx.arc(c.x,c.y,c.r,0,Math.PI*2); ctx.fill(); 
-        ctx.fillStyle="#fff"; ctx.font="bold 22px Kanit"; ctx.textAlign="center"; ctx.fillText("ลังกระดาษ 📦", c.x, c.y+8); 
+        ctx.fillStyle="#fff"; ctx.font="bold 22px Kanit"; ctx.textAlign="center"; ctx.fillText("ตู้เซฟ 🏦", c.x, c.y+8); 
     });
     
     partitions.forEach(p => { 
@@ -386,17 +383,17 @@ function draw() {
         ctx.shadowColor = it.type==='yadom'?"#4caf50":(it.type==='bomb'?"#cbd5e1":"#ffeb3b");
         ctx.shadowBlur = 15 + Math.sin(Date.now()/150)*10;
         ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(it.x,it.y,22,0,Math.PI*2); ctx.fill(); 
-        ctx.fillStyle="#000"; ctx.font="24px Arial"; ctx.textAlign="center"; ctx.fillText(it.type==='yadom'?'🌿':(it.type==='bomb'?'📚':'📝'), it.x, it.y+8); 
+        ctx.fillStyle="#000"; ctx.font="24px Arial"; ctx.textAlign="center"; ctx.fillText(it.type==='yadom'?'🌿':(it.type==='bomb'?'💰':'🧾'), it.x, it.y+8); 
         ctx.restore(); 
     });
 
-    // 🚨 กระดาษและโพสต์อิท!
+    // 🚨 เปลี่ยนกราฟิกกระสุนให้เป็นเช็คลอยไปมา
     localSplashes.forEach(s => { 
         ctx.save(); 
-        ctx.shadowColor = s.isP ? '#ffeb3b' : '#ffffff'; ctx.shadowBlur = 10;
-        ctx.fillStyle = s.isP ? '#ffeb3b' : '#ffffff'; 
-        ctx.beginPath(); ctx.arc(s.x,s.y,10,0,Math.PI*2); ctx.fill(); 
-        ctx.strokeStyle = "#cbd5e1"; ctx.lineWidth = 2; ctx.stroke();
+        ctx.shadowColor = s.isP ? '#ffeb3b' : '#00d2ff'; ctx.shadowBlur = 10;
+        ctx.font = "22px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+        // 💸 = กระสุนปกติ, 🧾 = ใบแจ้งหนี้ (ปาแล้วตาบอด)
+        ctx.fillText(s.isP ? '🧾' : '💸', s.x, s.y);
         ctx.restore();
     });
 
